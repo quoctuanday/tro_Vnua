@@ -8,6 +8,13 @@ const app = express();
 db.connect();
 
 app.use(
+    cors({
+        origin: `http://localhost:${CLIENT_PORT}`,
+        credentials: true,
+    })
+);
+
+app.use(
     express.urlencoded({
         extended: true,
     })
