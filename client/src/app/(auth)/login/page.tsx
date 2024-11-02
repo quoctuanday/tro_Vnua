@@ -2,6 +2,7 @@
 import { login } from '@/api/api';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -12,6 +13,7 @@ interface IFormInput {
 }
 
 function LoginPage() {
+    const router = useRouter();
     const { register, handleSubmit } = useForm<IFormInput>();
     const [hiddenPass, setHiddenPass] = useState(true);
     const onSubmit = (data: unknown) => {
@@ -19,7 +21,11 @@ function LoginPage() {
             try {
                 const response = await login(data);
                 if (response) {
-                    console.log(response.data.token);
+                    console.log(response.data);
+                    localStorage.setItem('token', response.data.accessToken);
+                    setTimeout(() => {
+                        router.push('/home');
+                    }, 2000);
                 }
             } catch (error) {
                 console.log(error);

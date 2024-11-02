@@ -3,9 +3,12 @@ const cors = require('cors');
 const { PORT, CLIENT_PORT } = require('./config/env');
 const db = require('./config/db');
 const route = require('./routes');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 db.connect();
+
+app.use(cookieParser());
 
 app.use(
     cors({

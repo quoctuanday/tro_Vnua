@@ -5,5 +5,6 @@ module.exports = {
     PORT: process.env.PORT,
     DB_URL: process.env.DB_URL,
     CLIENT_PORT: process.env.CLIENT_PORT,
-    JWT_SECRET: process.env.JWT_SECRET,
+    ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
 };

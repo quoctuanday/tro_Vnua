@@ -1,7 +1,10 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/env/index');
+const {
+    REFRESH_TOKEN_SECRET,
+    ACCESS_TOKEN_SECRET,
+} = require('../config/env/index');
 
 class UserController {
     createUser(req, res, next) {
@@ -50,15 +53,59 @@ class UserController {
                     return res
                         .status(401)
                         .json({ message: 'Password is wrong' });
-                const token = jwt.sign(
+                //create ACCToken and REFToken
+                const accessToken = jwt.sign(
                     { userId: user._id, role: user.role },
-                    JWT_SECRET,
+                    ACCESS_TOKEN_SECRET,
                     { expiresIn: '1h' }
                 );
-                console.log(token);
-                res.status(200).json({ message: 'Login successful', token });
+                const refreshToken = jwt.sign(
+                    { userId: user._id, role: user.role },
+                    REFRESH_TOKEN_SECRET,
+                    { expiresIn: '24h' }
+                );
+                res.cookie('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'strict',
+                    maxAge: 24 * 60 * 60 * 1000,
+                });
+                res.status(200).json({
+                    message: 'Login successful',
+                    accessToken,
+                });
             });
-        } catch (err) {}
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    refreshToken(req, res, next) {
+        const refreshToken = req.cookies.refreshToken;
+        console.log('refresh token', refreshToken);
+        if (!refreshToken) return res.status(401);
+        jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET,
+            (err, user) => {
+                if (err) {
+                    return res.status(403);
+                }
+                //Create new access token
+                const newAccessToken = jwt.sign(
+                    { userId: user._id, role: user.role },
+                    ACCESS_TOKEN_SECRET,
+                    { expiresIn: '1h' }
+                );
+                res.json({ accessToken: newAccessToken });
+            }
+        );
+    }
+
+    getUser(req, res, next) {
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1];
+
+        console.log('GET USER ', token);
     }
 }
 module.exports = new UserController();
