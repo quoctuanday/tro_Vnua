@@ -1,13 +1,14 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { createUser } from '@/api/api';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
 interface IFormInput {
+    userName: string;
     email: string;
     password: string;
     passwordConfirm: string;
@@ -21,7 +22,13 @@ function RegisterPage() {
         watch,
         formState: { errors },
     } = useForm<IFormInput>();
+    const [isClient, setIsClient] = useState(false);
+
     const password = watch('password');
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const onSubmit = (data: unknown) => {
         console.log(data);
@@ -48,6 +55,10 @@ function RegisterPage() {
 
     const regex =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!isClient) {
+        return null;
+    }
     return (
         <div className="flex items-center justify-center h-[100vh] bg-[#efefef]">
             <div className="relative ">
@@ -61,7 +72,7 @@ function RegisterPage() {
                         width={1000}
                         height={1000}
                         priority
-                        className=" w-[14rem] h-[8rem] absolute top-[-5%] left-[50%] transform translate-x-[-50%]"
+                        className=" w-[14rem] h-[5rem] absolute top-0 left-[50%] transform translate-x-[-50%]"
                     ></Image>
                     <h1 className="pt-[4rem] roboto-bold text-center text-[1.2rem] ">
                         Đăng ký
@@ -72,6 +83,15 @@ function RegisterPage() {
                             {...register('email')}
                             type="email"
                             placeholder="example@gmail.com"
+                            className="border-2 w-full px-2 py-1 rounded-[0.5rem] bg-[#efefef] outline-none "
+                        />
+                    </div>
+                    <div className="mt-2">
+                        <label className="block">Tên người dùng</label>
+                        <input
+                            {...register('userName', { required: true })}
+                            type="text"
+                            placeholder="Nguyen Van A"
                             className="border-2 w-full px-2 py-1 rounded-[0.5rem] bg-[#efefef] outline-none "
                         />
                     </div>

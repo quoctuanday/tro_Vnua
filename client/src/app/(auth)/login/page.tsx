@@ -3,8 +3,9 @@ import { login } from '@/api/api';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 interface IFormInput {
@@ -14,25 +15,36 @@ interface IFormInput {
 
 function LoginPage() {
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
     const { register, handleSubmit } = useForm<IFormInput>();
     const [hiddenPass, setHiddenPass] = useState(true);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     const onSubmit = (data: unknown) => {
         const fetchData = async () => {
             try {
                 const response = await login(data);
                 if (response) {
                     console.log(response.data);
+                    toast.success('Đăng nhập thành công');
                     localStorage.setItem('token', response.data.accessToken);
                     setTimeout(() => {
                         router.push('/home');
                     }, 2000);
                 }
             } catch (error) {
+                toast.error('Đăng nhập thất bại');
                 console.log(error);
             }
         };
         fetchData();
     };
+    if (!isClient) {
+        return null;
+    }
     return (
         <div className="flex items-center justify-center h-[100vh] bg-[#efefef]">
             <div className="relative ">
@@ -46,7 +58,7 @@ function LoginPage() {
                         width={1000}
                         height={1000}
                         priority
-                        className=" w-[14rem] h-[8rem] absolute top-[-5%] left-[50%] transform translate-x-[-50%]"
+                        className=" w-[14rem] h-[5rem] absolute top-0 left-[50%] transform translate-x-[-50%]"
                     ></Image>
                     <h1 className="pt-[4rem] roboto-bold text-center text-[1.2rem] ">
                         Đăng nhập
@@ -93,6 +105,7 @@ function LoginPage() {
                     </div>
                 </form>
             </div>
+            <Toaster position="top-right" />
         </div>
     );
 }

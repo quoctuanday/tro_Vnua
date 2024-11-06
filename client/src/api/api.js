@@ -60,6 +60,7 @@ api.interceptors.response.use(
             return axios(originalRequest);
         }
         if (error.response.status === 403) {
+            localStorage.clear();
             window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -71,7 +72,13 @@ export const createUser = (data) =>
         data,
     });
 
+export const logOut = () => {
+    api.post('/users/logout', { withCredentials: true });
+};
+
 export const login = (data) =>
     api.post('/users/login', { data }, { withCredentials: true });
 
 export const getUser = () => api.get('/users/getUser');
+export const updateProfile = (data) =>
+    api.put('/users/updateProfile', { data });

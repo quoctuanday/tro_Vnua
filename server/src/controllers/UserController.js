@@ -8,13 +8,14 @@ const {
 
 class UserController {
     createUser(req, res, next) {
-        const { passwordConfirm, ...data } = req.body.data;
+        let { passwordConfirm, ...data } = req.body.data;
         User.findOne({ email: data.email }).then((user) => {
             if (!user) {
                 const pass = data.password;
                 bcrypt.hash(pass, 10).then((hashedPass) => {
                     data.password = hashedPass;
                     console.log(data);
+
                     const user = new User(data);
                     user.save()
                         .then((user) => {
@@ -79,6 +80,19 @@ class UserController {
             console.error(err);
         }
     }
+
+    logOut(req, res, next) {
+        const refreshToken = req.cookies.refreshToken;
+        console.log(refreshToken);
+        if (refreshToken) {
+            res.clearCookie('refreshToken')
+                .status(200)
+                .json({ message: 'Logout successfully' });
+        } else {
+            console.log('Logout failed');
+        }
+    }
+
     refreshToken(req, res, next) {
         const refreshToken = req.cookies.refreshToken;
         console.log('refresh token', refreshToken);
@@ -102,10 +116,24 @@ class UserController {
     }
 
     getUser(req, res, next) {
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1];
+        const userId = req.user.userId;
+        User.findById(userId).then((user) => {
+            if (!user) res.status(404).json({ error: 'User not found' });
+            res.status(200).json(user);
+        });
+    }
 
-        console.log('GET USER ', token);
+    updateProfile(req, res, next) {
+        const userId = req.user.userId;
+        User.findByIdAndUpdate(userId, { image: req.body.data.image })
+            .then((user) => {
+                if (!user) res.status(404).json({ error: 'User not found' });
+                res.status(200).json({ message: 'Profile updated' });
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json({ error: 'Internal Server error' });
+            });
     }
 }
 module.exports = new UserController();
