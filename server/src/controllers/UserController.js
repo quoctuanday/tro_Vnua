@@ -82,15 +82,8 @@ class UserController {
     }
 
     logOut(req, res, next) {
-        const refreshToken = req.cookies.refreshToken;
-        console.log(refreshToken);
-        if (refreshToken) {
-            res.clearCookie('refreshToken')
-                .status(200)
-                .json({ message: 'Logout successfully' });
-        } else {
-            console.log('Logout failed');
-        }
+        res.clearCookie('refreshToken');
+        res.status(200).json({ message: 'Log out successfully' });
     }
 
     refreshToken(req, res, next) {
@@ -102,11 +95,13 @@ class UserController {
             process.env.REFRESH_TOKEN_SECRET,
             (err, user) => {
                 if (err) {
+                    console.log('refresh token error', err);
                     return res.status(403);
                 }
+
                 //Create new access token
                 const newAccessToken = jwt.sign(
-                    { userId: user._id, role: user.role },
+                    { userId: user.userId, role: user.role },
                     ACCESS_TOKEN_SECRET,
                     { expiresIn: '1h' }
                 );
@@ -117,15 +112,26 @@ class UserController {
 
     getUser(req, res, next) {
         const userId = req.user.userId;
-        User.findById(userId).then((user) => {
-            if (!user) res.status(404).json({ error: 'User not found' });
-            res.status(200).json(user);
-        });
+        console.log(req.user);
+        console.log(userId);
+        User.findById(userId)
+            .then((user) => {
+                if (!user) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+                return res.status(200).json(user);
+            })
+            .catch((err) => {
+                console.error(err);
+                return res.status(500).json({ error: 'Internal Server Error' });
+            });
     }
 
     updateProfile(req, res, next) {
         const userId = req.user.userId;
-        User.findByIdAndUpdate(userId, { image: req.body.data.image })
+        const data = req.body.data;
+        console.log(data);
+        User.findByIdAndUpdate(userId, data)
             .then((user) => {
                 if (!user) res.status(404).json({ error: 'User not found' });
                 res.status(200).json({ message: 'Profile updated' });

@@ -111,7 +111,9 @@ export default function MainLayout({
                     </Link>
                 </div>
             </div>
-            <div className="">{children}</div>
+            <div className="bg-[#efefef3f]">{children}</div>
+            <div className="pt-[5rem] w-full bg-[#efefef3f]"></div>
+            <div className="fixed bottom-0 left-0 right-0  w-full h-[15rem] bg-black"></div>
         </div>
     );
 }

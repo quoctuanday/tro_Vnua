@@ -6,14 +6,16 @@ import React, { useRef, useState } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../firebase/config';
 import toast, { Toaster } from 'react-hot-toast';
-import { updateProfile } from '@/api/api';
+import { logout, updateProfile } from '@/api/api';
 import { FaSpinner } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 export default function ProfileLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const router = useRouter();
     const { setUserLoginData } = useUser();
     //Image upload
     const [changeImage, setChangeImage] = useState<string | null>(null);
@@ -21,13 +23,34 @@ export default function ProfileLayout({
     const [uploading, setUploading] = useState(false);
     const [visibleFormImage, setVisileFormImage] = useState(false);
     const inputUploadImage = useRef<HTMLInputElement>(null);
-    const handleLogOut = async () => {
-        console.log('hello');
+
+    const handleLogOut = () => {
+        const logOut = async () => {
+            try {
+                const response = await logout();
+                if (response) {
+                    localStorage.clear();
+                    toast.success('Đã đăng xuất');
+                    setTimeout(() => {
+                        router.push('/login');
+                    }, 2000);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        logOut();
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        const maxSizeInMB = 2;
+        const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
         if (file) {
+            if (file.size > maxSizeInBytes) {
+                toast.error('Kích thước ảnh lớn hơn 2Mb. Mời chọn lại!');
+                return;
+            }
             setFile(file);
             setChangeImage(URL.createObjectURL(file));
         }
@@ -90,7 +113,7 @@ export default function ProfileLayout({
     if (!userLoginData) return;
     return (
         <div className="px-[13rem] bg-[#efefef3f] h-full">
-            <div className="grid grid-cols-6 gap-4 pt-[1.3rem] ">
+            <div className="grid grid-cols-6 gap-4 py-[1.3rem] ">
                 <div className="col-span-2 h-[20rem] ">
                     <div className="text-center border-b-[1px] pb-[1.3rem]">
                         <div className="flex justify-center relative">
@@ -152,6 +175,9 @@ export default function ProfileLayout({
                                                 Tải ảnh lên
                                             </button>
                                         </div>
+                                        <p className="mt-2 roboto-light-italic ">
+                                            Kích thước ảnh không vượt quá 2Mb
+                                        </p>
                                     </div>
                                 </>
                             ) : (
@@ -164,23 +190,31 @@ export default function ProfileLayout({
                     </div>
                     <div className="mt-[1.3rem] roboto-bold text-[1.1rem]">
                         <Link
-                            href={'#'}
+                            href={'/profile'}
                             className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
                         >
                             Tài khoản của tôi
                         </Link>
                         <Link
-                            href={'#'}
+                            href={'/profile/postRental'}
                             className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
                         >
                             Bài đăng thuê trọ
                         </Link>
                         <Link
-                            href={'#'}
+                            href={'/profile/postNews'}
                             className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
                         >
                             Bài đăng tin tức
                         </Link>
+                        {userLoginData.role && (
+                            <Link
+                                href={'/admin'}
+                                className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
+                            >
+                                Dashboard Admin
+                            </Link>
+                        )}
                         <div
                             onClick={handleLogOut}
                             className="py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
@@ -189,7 +223,9 @@ export default function ProfileLayout({
                         </div>
                     </div>
                 </div>
-                <div className="col-span-4 h-[20rem] bg-[#333]">{children}</div>
+                <div className="col-span-4 min-h-[20rem] bg-white rounded-[0.6rem] shadow-custom-light">
+                    {children}
+                </div>
             </div>
             <Toaster position="top-right" />
         </div>

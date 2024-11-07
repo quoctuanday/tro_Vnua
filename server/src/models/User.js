@@ -8,7 +8,7 @@ const User = new Schema(
         password: { type: String, maxLength: 255, required: true },
         email: { type: String, maxlength: 255, required: true },
         image: { type: String, maxLength: 255 },
-        gender: { type: String, enum: ['Nam', 'Nu'] },
+        gender: { type: String, enum: ['Nam', 'Nữ'] },
         phoneNumber: { type: String, maxLength: 255 },
         DOB: { type: Date },
         role: { type: Boolean, required: true, default: false },
