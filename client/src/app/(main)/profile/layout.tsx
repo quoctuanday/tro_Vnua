@@ -196,7 +196,7 @@ export default function ProfileLayout({
                             Tài khoản của tôi
                         </Link>
                         <Link
-                            href={'/profile/postRental'}
+                            href={'/profile/listRoom'}
                             className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
                         >
                             Bài đăng thuê trọ
