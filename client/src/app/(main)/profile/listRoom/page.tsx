@@ -1,10 +1,27 @@
 'use client';
+import { getRoomsPersonal } from '@/api/api';
 import PostRoom from '@/components/PostRoom';
-import React, { useState } from 'react';
+import { Room } from '@/schema/room';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import { FaCamera, FaSpinner, FaTrash } from 'react-icons/fa';
 import { MdAddBox } from 'react-icons/md';
+import Currency from '../../../../helper/convertCurrency';
+import { FaPencil } from 'react-icons/fa6';
 
 function ListRoomPage() {
+    const [rooms, setRooms] = useState<Room[]>([]);
     const [formVisible, setFormVisible] = useState(false);
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await getRoomsPersonal();
+            if (response) {
+                console.log(response.data.rooms);
+                setRooms(response.data.rooms);
+            }
+        };
+        fetchData();
+    }, []);
     return (
         <div className="p-[1.3rem] roboto-regular">
             <div className="flex items-center text-[1.3rem]">
@@ -18,6 +35,62 @@ function ListRoomPage() {
                 </div>
             </div>
             {formVisible && <PostRoom setFormVisible={setFormVisible} />}
+            <div className="">
+                {rooms ? (
+                    <>
+                        {rooms.map((room, index) => (
+                            <div className="mt-3 cursor-pointer" key={index}>
+                                <div className="relative flex items-center">
+                                    <Image
+                                        src={`${room.images[0]}`}
+                                        alt=""
+                                        width={100}
+                                        height={100}
+                                        className="w-[6rem] h-[6rem] rounded-[10px]"
+                                    ></Image>
+                                    <div className="absolute px-1 py-1 bg-[#333] opacity-40 bottom-[5%] left-[0.6rem] text-white flex items-center justify-center rounded min-w-[1.5rem] h-[1.2rem]">
+                                        <FaCamera />
+                                        <p className="ml-2">
+                                            {room.images.length}
+                                        </p>
+                                    </div>
+                                    <div className="ml-2 flex flex-col justify-between">
+                                        <div className="roboto-bold">
+                                            {room.title}
+                                        </div>
+                                        <div className="max-w-[12rem]">
+                                            {room.description}
+                                        </div>
+                                        <div className="flex items-center text-rootColor">
+                                            <div className="roboto-bold">
+                                                {Currency(room.price, 'vi-VN')}
+                                                /tháng{' '}
+                                            </div>
+                                            <div className="ml-2">
+                                                {room.location}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <button className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white">
+                                            <FaPencil />
+                                        </button>
+                                        <button className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white">
+                                            <FaTrash />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </>
+                ) : (
+                    <>
+                        <div className="flex items-center justify-center">
+                            <FaSpinner className="spin" />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

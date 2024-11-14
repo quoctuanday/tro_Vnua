@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const User = require('./User');
 const Schema = mongoose.Schema;
 
-const RoomListing = new RoomListing(
+const Room = new Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: User },
         title: { type: String, required: true },
@@ -11,11 +11,12 @@ const RoomListing = new RoomListing(
         contactEmail: { type: String },
         description: { type: String, required: true },
         location: { type: String, required: true },
-        image: { type: [String], required: true },
+        images: { type: [String], required: true },
+        urlSaveImages: { type: String },
         price: { type: Number, required: true },
         isAvailable: { type: Boolean, required: true, default: false },
     },
     { timestamp: true }
 );
 
-module.exports = mongoose.model('RoomListing', RoomListing);
+module.exports = mongoose.model('Room', Room);

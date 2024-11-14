@@ -6,6 +6,13 @@ import { FiPlus } from 'react-icons/fi';
 import { IoClose, IoCloseCircleOutline } from 'react-icons/io5';
 import getCoordinates from '../helper/locationIntoCoordinates';
 import { useForm } from 'react-hook-form';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import toast, { Toaster } from 'react-hot-toast';
+import { useUser } from '@/store/userData';
+import { v4 as uuidv4 } from 'uuid';
+import { storage } from '@/firebase/config';
+import { createRoom } from '@/api/api';
+import { useRouter } from 'next/navigation';
 
 //type
 interface PostRoomProps {
@@ -17,17 +24,21 @@ type Coordinates = {
 } | null;
 
 const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
+    const router = useRouter();
+    const { userLoginData } = useUser();
     const { register, handleSubmit, getValues } = useForm();
-    const [typeRoom, setTypeRoom] = useState<number | null>(null);
+    // const [typeRoom, setTypeRoom] = useState<number | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
     const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
     const [error, setError] = useState();
+
+    // const handleClickType = (index: number) => {
+    //     setTypeRoom(typeRoom === index ? null : index);
+    // };
+
     //Set image
-    const handleClickType = (index: number) => {
-        setTypeRoom(typeRoom === index ? null : index);
-    };
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files;
         const maxSizeInMB = 2;
@@ -73,12 +84,58 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     };
 
     //submit form
-    const onSubmit = (data: unknown) => {
-        console.log(data);
+    const onSubmit = async (data: unknown) => {
+        if (!files) {
+            toast.error('Chưa chọn ảnh!');
+            return;
+        }
+        const randomFolderName = uuidv4();
+        const folderPath = `troVnua/${userLoginData?.userName}/room/${randomFolderName}`;
+        try {
+            const uploadImages = await Promise.all(
+                files.map(async (file) => {
+                    const storageRef = ref(
+                        storage,
+                        `${folderPath}/${file.name}`
+                    );
+
+                    try {
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+                        return url;
+                    } catch (error) {
+                        console.log('Lỗi upload ảnh:', error);
+                        return null;
+                    }
+                })
+            );
+
+            const successfulUploads = uploadImages.filter(
+                (result) => result !== null
+            );
+            console.log(successfulUploads);
+            const userId = userLoginData?._id;
+
+            console.log(data);
+            const response = await createRoom({
+                data,
+                userId,
+                folderPath,
+                successfulUploads,
+            });
+            if (response) {
+                toast.success('Đăng tìm phòng thành công!');
+                setTimeout(() => {
+                    router.push('/profile/listRoom');
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Có lỗi xảy ra trong quá trình upload:', error);
+        }
     };
 
     return (
-        <div className="fixed flex items-center justify-center top-0 bottom-0 left-0 right-0">
+        <div className="fixed flex items-center justify-center top-0 bottom-0 left-0 right-0 z-[9999]">
             <div
                 className="absolute top-0 bottom-0 left-0 right-0  opacity-50 bg-[#ccc]"
                 onClick={() => setFormVisible(false)}
@@ -131,6 +188,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                     type="text"
                                     {...register('contactNumber', {
                                         required: true,
+                                        minLength: 9,
                                     })}
                                     className="col-span-3 px-2 py-1 rounded-[10px] border-[1px] outline-none w-full"
                                 />
@@ -148,7 +206,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 />
                             </div>
                         </div>
-                        <div className="mt-3 ">
+                        {/* <div className="mt-3 ">
                             <div className="roboto-bold">Loại phòng: </div>
                             <div className=" grid grid-cols-5 gap-2 mt-1">
                                 <div className="col-span-1 ">
@@ -172,12 +230,12 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                     </label>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="mt-3">
                             <div className="roboto-bold">Mô tả:</div>
                             <textarea
                                 {...register('description', { required: true })}
-                                name=""
+                                name="description"
                                 className="min-h-[10rem] w-full mt-1 border-2 outline-none rounded"
                             ></textarea>
                         </div>
@@ -185,7 +243,10 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                             <div className="roboto-bold">Giá:</div>
                             <input
                                 type="number"
-                                {...register('price', { required: true })}
+                                {...register('price', {
+                                    required: true,
+                                    min: 100000,
+                                })}
                                 className=" mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
                             />
                         </div>
@@ -236,7 +297,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                         </div>
                         <div className="mt-3 roboto-bold">
                             <h1 className="roboto-bold">Vị trí</h1>
-                            <div className="mt-1 w-full">
+                            <div className="mt-1 w-full flex items-center">
                                 <input
                                     {...register('location', {
                                         required: true,
@@ -246,7 +307,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 />
                                 <div
                                     onClick={searchMap}
-                                    className="ml-2 bg-rootColor text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
+                                    className="ml-2 bg-rootColor cursor-pointer text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
                                 >
                                     Tìm kiếm
                                 </div>
@@ -271,6 +332,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                     </form>
                 </div>
             </div>
+            <Toaster position="top-right" />
         </div>
     );
 };

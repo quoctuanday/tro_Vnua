@@ -22,7 +22,6 @@ class UserController {
                             console.log('User created successfully');
                             res.status(201).json({
                                 message: 'User created successfully',
-                                user,
                             });
                         })
                         .catch((error) => {

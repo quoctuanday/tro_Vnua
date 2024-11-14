@@ -80,3 +80,7 @@ export const login = (data) =>
 export const getUser = () => api.get('/users/getUser');
 export const updateProfile = (data) =>
     api.put('/users/updateProfile', { data });
+
+//Room personal
+export const createRoom = (data) => api.post('/rooms/createRoom', { data });
+export const getRoomsPersonal = () => api.get('/rooms/getRoomListPerson');

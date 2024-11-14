@@ -65,8 +65,8 @@ export default function ProfileLayout({
     const handleUploadImage = async () => {
         if (!file) {
             toast.error('Chưa chọn ảnh kìa!');
+            return;
         }
-        if (!file) return;
         setUploading(true);
         const storageRef = ref(
             storage,
