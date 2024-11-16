@@ -13,14 +13,18 @@ function ListRoomPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [formVisible, setFormVisible] = useState(false);
     useEffect(() => {
+        let isMounted = true;
         const fetchData = async () => {
             const response = await getRoomsPersonal();
-            if (response) {
+            if (isMounted && response) {
                 console.log(response.data.rooms);
                 setRooms(response.data.rooms);
             }
         };
         fetchData();
+        return () => {
+            isMounted = false;
+        };
     }, []);
     return (
         <div className="p-[1.3rem] roboto-regular">
@@ -54,11 +58,11 @@ function ListRoomPage() {
                                             {room.images.length}
                                         </p>
                                     </div>
-                                    <div className="ml-2 flex flex-col justify-between">
-                                        <div className="roboto-bold">
+                                    <div className="ml-2 flex flex-col justify-between max-w-[26.8rem] h-full">
+                                        <div className="roboto-bold max-w-[26.8rem] max_line_1 ">
                                             {room.title}
                                         </div>
-                                        <div className="max-w-[12rem]">
+                                        <div className="max_line_2 ">
                                             {room.description}
                                         </div>
                                         <div className="flex items-center text-rootColor">
@@ -66,7 +70,7 @@ function ListRoomPage() {
                                                 {Currency(room.price, 'vi-VN')}
                                                 /tháng{' '}
                                             </div>
-                                            <div className="ml-2">
+                                            <div className="ml-2 max_line_1 ">
                                                 {room.location}
                                             </div>
                                         </div>
