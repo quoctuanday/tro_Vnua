@@ -16,6 +16,26 @@
         animation: spin 1s linear infinite;
     }
 }
+@layer components {
+    .max_line_1 {
+        max-width: 100%;
+        overflow: hidden;
+        display: block;
+        display: -webkit-box;
+        /* Dòng trên ko áp dụng thì nó sẽ áp dụng dòng trên nữa */
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+    }
+    .max_line_2 {
+        max-width: 100%;
+        overflow: hidden;
+        display: block;
+        display: -webkit-box;
+        /* Dòng trên ko áp dụng thì nó sẽ áp dụng dòng trên nữa */
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+}
 
 @layer utilities {
     .roboto-thin {
