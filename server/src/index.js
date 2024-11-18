@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
 const { PORT, CLIENT_PORT } = require('./config/env');
 const db = require('./config/db');
 const route = require('./routes');
 const cookieParser = require('cookie-parser');
+const configureWebSocket = require('./config/ws/index');
 
 const app = express();
 db.connect();
+configureWebSocket();
 
 app.use(cookieParser());
 

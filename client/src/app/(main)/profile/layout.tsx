@@ -223,7 +223,15 @@ export default function ProfileLayout({
                         </div>
                     </div>
                 </div>
-                <div className="col-span-4 min-h-[20rem] bg-white rounded-[0.6rem] shadow-custom-light">
+                <div
+                    className="col-span-4 min-h-[20rem] max-h-[33rem] overflow-y-auto bg-white rounded-[0.6rem] shadow-custom-light 
+                    [&::-webkit-scrollbar]:w-2
+                    [&::-webkit-scrollbar-track]:rounded-[10px]
+                    [&::-webkit-scrollbar-track]:bg-gray-100
+                    [&::-webkit-scrollbar-thumb]:rounded-[10px]
+                    [&::-webkit-scrollbar-thumb]:bg-gray-300
+                    "
+                >
                     {children}
                 </div>
             </div>

@@ -1,6 +1,7 @@
 const Room = require('../models/Room');
 
 class RoomController {
+    //For personal use only
     create(req, res, next) {
         console.log(req.body.data);
         const data = req.body.data.data;
@@ -26,7 +27,7 @@ class RoomController {
         const userId = req.user.userId;
         Room.find({ userId: userId })
             .then((rooms) => {
-                console.log('Get room person successfully');
+                // console.log('Get room person successfully');
                 res.status(200).json({
                     message: 'get room person successfully',
                     rooms,
@@ -38,6 +39,36 @@ class RoomController {
                     message: 'Internal Server Error',
                     error,
                 });
+            });
+    }
+
+    deleteRoomPersonal(req, res, next) {
+        const roomId = req.params.roomId;
+        const userId = req.user.userId;
+        Room.delete({ _id: roomId, userId: userId })
+            .then(() => {
+                console.log('Delete room Ok!');
+                res.status(200).json({ message: 'Room deleted successfully' });
+            })
+            .catch((error) => {
+                console.log('error delete room: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    getDeleteRoom(req, res, next) {
+        const userId = req.user.userId;
+        Room.find({ userId: userId, deleted: true })
+            .then((rooms) => {
+                if (rooms) {
+                    res.status(200).json({
+                        message: 'List rooms has been deleted',
+                        rooms,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.log('error list rooms delete: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
             });
     }
 }

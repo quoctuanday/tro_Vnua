@@ -3,6 +3,12 @@ const router = express.Router();
 const roomController = require('../controllers/RoomController');
 const authenticateToken = require('../middleware/auth');
 
+router.get('/getDeleteRoom', authenticateToken, roomController.getDeleteRoom);
+router.delete(
+    '/deleteRoomPersonal/:roomId',
+    authenticateToken,
+    roomController.deleteRoomPersonal
+);
 router.get(
     '/getRoomListPerson',
     authenticateToken,

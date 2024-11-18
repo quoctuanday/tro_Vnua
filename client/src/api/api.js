@@ -84,3 +84,6 @@ export const updateProfile = (data) =>
 //Room personal
 export const createRoom = (data) => api.post('/rooms/createRoom', { data });
 export const getRoomsPersonal = () => api.get('/rooms/getRoomListPerson');
+export const deleteRoomPersonal = (roomId) =>
+    api.delete(`/rooms/deleteRoomPersonal/${roomId}`);
+export const getDeleteRoomPersonal = () => api.get('/rooms/getDeleteRoom');

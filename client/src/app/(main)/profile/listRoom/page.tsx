@@ -1,17 +1,33 @@
 'use client';
-import { getRoomsPersonal } from '@/api/api';
+import { deleteRoomPersonal, getRoomsPersonal } from '@/api/api';
 import PostRoom from '@/components/PostRoom';
 import { Room } from '@/schema/room';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
-import { FaCamera, FaSpinner, FaTrash } from 'react-icons/fa';
+import {
+    FaCamera,
+    FaSortAmountDown,
+    FaSortAmountDownAlt,
+    FaSpinner,
+    FaTrash,
+} from 'react-icons/fa';
 import { MdAddBox } from 'react-icons/md';
-import Currency from '../../../../helper/convertCurrency';
+import Currency from '../../../../utils/convertCurrency';
+import useWebSocket from '../../../../utils/websocket';
 import { FaPencil } from 'react-icons/fa6';
+import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
 
 function ListRoomPage() {
+    const socketUrl = 'ws://localhost:8000';
     const [rooms, setRooms] = useState<Room[]>([]);
     const [formVisible, setFormVisible] = useState(false);
+    const [reverseSort, setReverseSort] = useState(false);
+    const [sortCriterion, setSortCriterion] = useState<
+        'name' | 'date' | 'price'
+    >('date');
+
+    useWebSocket(socketUrl, setRooms);
     useEffect(() => {
         let isMounted = true;
         const fetchData = async () => {
@@ -26,6 +42,46 @@ function ListRoomPage() {
             isMounted = false;
         };
     }, []);
+
+    const getSortedRooms = () => {
+        const sorted = [...rooms].sort((a, b) => {
+            switch (sortCriterion) {
+                case 'name':
+                    return a.title.localeCompare(b.title);
+                case 'date':
+                    return (
+                        new Date(b.createdAt ?? 0).getTime() -
+                        new Date(a.createdAt ?? 0).getTime()
+                    );
+                case 'price':
+                    return a.price - b.price;
+                default:
+                    return 0;
+            }
+        });
+
+        if (reverseSort) {
+            return sorted.reverse();
+        }
+
+        return sorted;
+    };
+
+    const sortedRooms = getSortedRooms();
+
+    const deleteRoom = (roomId: string) => {
+        console.log('delete room:', roomId);
+        const deleteData = async () => {
+            const response = await deleteRoomPersonal(roomId);
+            if (response) {
+                toast.success('Xoá phòng thành công!');
+                setRooms(rooms.filter((room) => room._id !== roomId));
+            } else {
+                toast.success('Xoá phòng thất bại');
+            }
+        };
+        deleteData();
+    };
     return (
         <div className="p-[1.3rem] roboto-regular">
             <div className="flex items-center text-[1.3rem]">
@@ -39,10 +95,47 @@ function ListRoomPage() {
                 </div>
             </div>
             {formVisible && <PostRoom setFormVisible={setFormVisible} />}
+            <div className="mt-1 flex items-center justify-end">
+                <select
+                    name=""
+                    id=""
+                    onChange={(e) =>
+                        setSortCriterion(
+                            e.target.value as 'name' | 'date' | 'price'
+                        )
+                    }
+                    className="rounded border-2 outline-none px-2 py-1"
+                >
+                    <option value="date">Sắp xếp theo ngày đăng</option>
+                    <option value="price">Sắp xếp theo giá</option>
+                    <option value="name">Sắp xếp theo tên</option>
+                </select>
+                {reverseSort ? (
+                    <FaSortAmountDown
+                        className="ml-2 hover:text-rootColor cursor-pointer"
+                        onClick={() => {
+                            setReverseSort(false);
+                        }}
+                    />
+                ) : (
+                    <FaSortAmountDownAlt
+                        className="ml-2 hover:text-rootColor cursor-pointer"
+                        onClick={() => {
+                            setReverseSort(true);
+                        }}
+                    />
+                )}
+                <Link
+                    href={'/profile/TrashRoom'}
+                    className="block ml-2 hover:text-rootColor"
+                >
+                    <FaTrash />
+                </Link>
+            </div>
             <div className="">
-                {rooms ? (
+                {sortedRooms ? (
                     <>
-                        {rooms.map((room, index) => (
+                        {sortedRooms.map((room, index) => (
                             <div className="mt-3 cursor-pointer" key={index}>
                                 <div className="relative flex items-center">
                                     <Image
@@ -79,7 +172,10 @@ function ListRoomPage() {
                                         <button className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white">
                                             <FaPencil />
                                         </button>
-                                        <button className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white">
+                                        <button
+                                            onClick={() => deleteRoom(room._id)}
+                                            className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white"
+                                        >
                                             <FaTrash />
                                         </button>
                                     </div>
@@ -95,6 +191,7 @@ function ListRoomPage() {
                     </>
                 )}
             </div>
+            <Toaster position="top-right" />
         </div>
     );
 }

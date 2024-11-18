@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React, { useRef, useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import { IoClose, IoCloseCircleOutline } from 'react-icons/io5';
-import getCoordinates from '../helper/locationIntoCoordinates';
+import getCoordinates from '../utils/locationIntoCoordinates';
 import { useForm } from 'react-hook-form';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast, { Toaster } from 'react-hot-toast';
