@@ -17,6 +17,7 @@ import useWebSocket from '../../../../utils/websocket';
 import { FaPencil } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
+import EditRoom from '@/components/editRoom';
 
 function ListRoomPage() {
     const socketUrl = 'ws://localhost:8000';
@@ -26,6 +27,10 @@ function ListRoomPage() {
     const [sortCriterion, setSortCriterion] = useState<
         'name' | 'date' | 'price'
     >('date');
+    const [currentRoomIndex, setCurrentRoomIndex] = useState<number | null>(
+        null
+    );
+    const [editForm, setEditForm] = useState(false);
 
     useWebSocket(socketUrl, setRooms);
     useEffect(() => {
@@ -43,6 +48,7 @@ function ListRoomPage() {
         };
     }, []);
 
+    //Sort rooms
     const getSortedRooms = () => {
         const sorted = [...rooms].sort((a, b) => {
             switch (sortCriterion) {
@@ -95,6 +101,19 @@ function ListRoomPage() {
                 </div>
             </div>
             {formVisible && <PostRoom setFormVisible={setFormVisible} />}
+            {editForm && currentRoomIndex !== null && (
+                <EditRoom
+                    rooms={sortedRooms}
+                    roomIndex={currentRoomIndex}
+                    onUpdateRoom={(updatedRoom) => {
+                        const updatedRooms = [...sortedRooms];
+                        updatedRooms[currentRoomIndex] = updatedRoom;
+                        setRooms(updatedRooms);
+                        setEditForm(false);
+                    }}
+                    setEditForm={setEditForm}
+                />
+            )}
             <div className="mt-1 flex items-center justify-end">
                 <select
                     name=""
@@ -169,7 +188,13 @@ function ListRoomPage() {
                                         </div>
                                     </div>
                                     <div className="ml-auto">
-                                        <button className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white">
+                                        <button
+                                            onClick={() => {
+                                                setCurrentRoomIndex(index);
+                                                setEditForm(true);
+                                            }}
+                                            className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
+                                        >
                                             <FaPencil />
                                         </button>
                                         <button

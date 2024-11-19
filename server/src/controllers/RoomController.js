@@ -57,8 +57,9 @@ class RoomController {
     }
     getDeleteRoom(req, res, next) {
         const userId = req.user.userId;
-        Room.find({ userId: userId, deleted: true })
+        Room.findWithDeleted({ userId: userId, deleted: true })
             .then((rooms) => {
+                console.log(rooms);
                 if (rooms) {
                     res.status(200).json({
                         message: 'List rooms has been deleted',
@@ -68,6 +69,32 @@ class RoomController {
             })
             .catch((error) => {
                 console.log('error list rooms delete: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    restoreRoomPersonal(req, res, next) {
+        const userId = req.user.userId;
+        const roomId = req.params.roomId;
+        Room.restore({ _id: roomId, userId: userId })
+            .then(() => {
+                console.log('Restore room ok!');
+                res.status(200).json({ message: 'Room has been restore' });
+            })
+            .catch((error) => {
+                console.log('Error restore room', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    forceDeleteRoomPersonal(req, res, next) {
+        const roomId = req.params.roomId;
+        Room.deleteOne({ _id: roomId })
+            .then(() => {
+                res.status(200).json({
+                    message: 'Room has been force deleted ',
+                });
+            })
+            .catch((error) => {
+                console.log('error force delete: ', error);
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }

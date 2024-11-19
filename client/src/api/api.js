@@ -87,3 +87,7 @@ export const getRoomsPersonal = () => api.get('/rooms/getRoomListPerson');
 export const deleteRoomPersonal = (roomId) =>
     api.delete(`/rooms/deleteRoomPersonal/${roomId}`);
 export const getDeleteRoomPersonal = () => api.get('/rooms/getDeleteRoom');
+export const restoreRoomPersonal = (roomId) =>
+    api.patch(`rooms/restoreRoomPersonal/${roomId}`);
+export const forceDeleteRoom = (roomId) =>
+    api.delete(`/rooms/forceDeleteRoomPersonal/${roomId}`);
