@@ -10,6 +10,7 @@ export type Room = {
     location: string;
     urlSaveImages: string;
     price: number;
+    acreage: number;
     isAvailable: boolean;
     createdAt?: string;
     updatedAt?: string;

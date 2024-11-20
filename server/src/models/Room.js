@@ -12,6 +12,7 @@ const Room = new Schema(
         contactEmail: { type: String },
         description: { type: String, required: true },
         location: { type: String, required: true },
+        acreage: { type: Number, required: true },
         images: { type: [String], required: true },
         urlSaveImages: { type: String },
         price: { type: Number, required: true },

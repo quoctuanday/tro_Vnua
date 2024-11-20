@@ -91,3 +91,5 @@ export const restoreRoomPersonal = (roomId) =>
     api.patch(`rooms/restoreRoomPersonal/${roomId}`);
 export const forceDeleteRoom = (roomId) =>
     api.delete(`/rooms/forceDeleteRoomPersonal/${roomId}`);
+export const updateRoomPersonal = (data) =>
+    api.put('/rooms/updateRoomPersonal', { data });

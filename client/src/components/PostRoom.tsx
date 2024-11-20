@@ -239,16 +239,29 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 className="min-h-[10rem] w-full mt-1 border-2 outline-none rounded"
                             ></textarea>
                         </div>
-                        <div className="mt-3">
-                            <div className="roboto-bold">Giá:</div>
-                            <input
-                                type="number"
-                                {...register('price', {
-                                    required: true,
-                                    min: 100000,
-                                })}
-                                className=" mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
-                            />
+                        <div className="mt-3 flex items-center">
+                            <div className="flex items-center ">
+                                <div className="roboto-bold">Giá:</div>
+                                <input
+                                    type="number"
+                                    {...register('price', {
+                                        required: true,
+                                        min: 100000,
+                                    })}
+                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                />
+                            </div>
+                            <div className="flex items-center ml-3 ">
+                                <div className="roboto-bold">Diện tích :</div>
+                                <input
+                                    type="number"
+                                    {...register('acreage', {
+                                        required: true,
+                                        min: 1,
+                                    })}
+                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                />
+                            </div>
                         </div>
                         <div className="mt-3">
                             <div className="roboto-bold">Hình ảnh:</div>

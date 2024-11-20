@@ -42,6 +42,21 @@ class RoomController {
             });
     }
 
+    updateRoomPersonal(req, res, next) {
+        console.log(req.body.data._id);
+        const data = req.body.data.data;
+        data.userId = req.body.data.userId;
+        data.images = req.body.data.uploadURL;
+        Room.findByIdAndUpdate(data._id, data)
+            .then(() => {
+                res.status(200).json({ message: 'Room updated successfully' });
+            })
+            .catch((error) => {
+                res.status(500).json({ message: 'Internal Server Error' });
+                console.log('Error update room: ', error);
+            });
+    }
+
     deleteRoomPersonal(req, res, next) {
         const roomId = req.params.roomId;
         const userId = req.user.userId;

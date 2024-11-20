@@ -92,7 +92,7 @@ export default function MainLayout({
                         Trang chủ
                     </Link>
                     <Link
-                        href={'#'}
+                        href={'/rooms'}
                         className="roboto-bold ml-9 hover:underline block"
                     >
                         Cho thuê phòng
@@ -104,14 +104,14 @@ export default function MainLayout({
                         Tìm người ở ghép
                     </Link>
                     <Link
-                        href={'#'}
+                        href={'/news'}
                         className="roboto-bold ml-9 hover:underline block"
                     >
                         Tin tức
                     </Link>
                 </div>
             </div>
-            <div className="bg-[#efefef3f]">{children}</div>
+            <div className="bg-[#efefef3f] px-[13rem]">{children}</div>
             <div className="pt-[5rem] w-full bg-[#efefef3f]"></div>
         </div>
     );

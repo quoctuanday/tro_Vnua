@@ -10,15 +10,13 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import { storage } from '@/firebase/config';
-import { createRoom } from '@/api/api';
-import { useRouter } from 'next/navigation';
+import { updateRoomPersonal } from '@/api/api';
 import { Room } from '@/schema/room';
 
 //type
 interface PostRoomProps {
     rooms: Room[];
     roomIndex: number;
-    onUpdateRoom: (updatedRoom: Room) => void;
     setEditForm: React.Dispatch<React.SetStateAction<boolean>>;
 }
 type Coordinates = {
@@ -30,15 +28,14 @@ const EditRoom: React.FC<PostRoomProps> = ({
     rooms,
     roomIndex,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onUpdateRoom,
     setEditForm,
 }) => {
-    const router = useRouter();
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues, setValue } = useForm();
     // const [typeRoom, setTypeRoom] = useState<number | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
+    const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
     const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
     const [error, setError] = useState();
@@ -59,12 +56,16 @@ const EditRoom: React.FC<PostRoomProps> = ({
         setValue('contactEmail', rooms[roomIndex].contactEmail);
         setValue('location', rooms[roomIndex].location);
         setValue('price', rooms[roomIndex].price);
+        setValue('acreage', rooms[roomIndex].acreage);
 
         setUrlSaveImages(rooms[roomIndex].urlSaveImages);
         const urls = rooms[roomIndex].images;
+
         if (Array.isArray(urls)) {
             setChangeImage(urls);
+            setUploadImageURL(urls);
         } else {
+            setUploadImageURL([urls]);
             setChangeImage([urls]);
         }
     }, [setValue, rooms, roomIndex]);
@@ -98,6 +99,9 @@ const EditRoom: React.FC<PostRoomProps> = ({
         setChangeImage((prevImages) =>
             prevImages.filter((_, i) => i !== index)
         );
+        setUploadImageURL((prevImages) =>
+            prevImages.filter((_, i) => i !== index)
+        );
 
         setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
     };
@@ -121,6 +125,7 @@ const EditRoom: React.FC<PostRoomProps> = ({
             return;
         }
         try {
+            //Upload images
             const uploadImages = await Promise.all(
                 files.map(async (file) => {
                     const storageRef = ref(
@@ -142,20 +147,20 @@ const EditRoom: React.FC<PostRoomProps> = ({
             const successfulUploads = uploadImages.filter(
                 (result) => result !== null
             );
-            console.log(successfulUploads);
+            const uploadURL = [...uploadImageURL, ...successfulUploads];
+
+            console.log(uploadURL);
             const userId = userLoginData?._id;
 
             console.log(data);
-            const response = await createRoom({
+            const response = await updateRoomPersonal({
                 data,
                 userId,
-                successfulUploads,
+                uploadURL,
             });
             if (response) {
-                toast.success('Đăng tìm phòng thành công!');
-                setTimeout(() => {
-                    router.push('/profile/listRoom');
-                }, 1000);
+                toast.success('Chỉnh sửa thông tin thành công!');
+                setEditForm(false);
             }
         } catch (error) {
             console.error('Có lỗi xảy ra trong quá trình upload:', error);
@@ -267,16 +272,29 @@ const EditRoom: React.FC<PostRoomProps> = ({
                                 className="min-h-[10rem] w-full mt-1 border-2 outline-none rounded"
                             ></textarea>
                         </div>
-                        <div className="mt-3">
-                            <div className="roboto-bold">Giá:</div>
-                            <input
-                                type="number"
-                                {...register('price', {
-                                    required: true,
-                                    min: 100000,
-                                })}
-                                className=" mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
-                            />
+                        <div className="mt-3 flex items-center">
+                            <div className="flex items-center ">
+                                <div className="roboto-bold">Giá:</div>
+                                <input
+                                    type="number"
+                                    {...register('price', {
+                                        required: true,
+                                        min: 100000,
+                                    })}
+                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                />
+                            </div>
+                            <div className="flex items-center ml-3 ">
+                                <div className="roboto-bold">Diện tích :</div>
+                                <input
+                                    type="number"
+                                    {...register('acreage', {
+                                        required: true,
+                                        min: 1,
+                                    })}
+                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                />
+                            </div>
                         </div>
                         <div className="mt-3">
                             <div className="roboto-bold">Hình ảnh:</div>

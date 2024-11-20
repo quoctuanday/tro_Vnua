@@ -105,12 +105,6 @@ function ListRoomPage() {
                 <EditRoom
                     rooms={sortedRooms}
                     roomIndex={currentRoomIndex}
-                    onUpdateRoom={(updatedRoom) => {
-                        const updatedRooms = [...sortedRooms];
-                        updatedRooms[currentRoomIndex] = updatedRoom;
-                        setRooms(updatedRooms);
-                        setEditForm(false);
-                    }}
                     setEditForm={setEditForm}
                 />
             )}
