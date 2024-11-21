@@ -93,3 +93,9 @@ export const forceDeleteRoom = (roomId) =>
     api.delete(`/rooms/forceDeleteRoomPersonal/${roomId}`);
 export const updateRoomPersonal = (data) =>
     api.put('/rooms/updateRoomPersonal', { data });
+
+//News personal
+export const createNews = (data) => api.post('/news/createNews', { data });
+export const getNewsPersonal = () => api.get('/news/getNewsPersonal');
+export const updateNews = (data) => api.put('/news/updateNews', { data });
+export const deleteNews = (data) => api.delete(`/news/deleteNews/${data}`);

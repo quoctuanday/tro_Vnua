@@ -17,7 +17,7 @@ import useWebSocket from '../../../../utils/websocket';
 import { FaPencil } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
-import EditRoom from '@/components/editRoom';
+import EditRoom from '@/components/EditRoom';
 
 function ListRoomPage() {
     const socketUrl = 'ws://localhost:8000';
@@ -35,14 +35,14 @@ function ListRoomPage() {
     useWebSocket(socketUrl, setRooms);
     useEffect(() => {
         let isMounted = true;
-        const fetchData = async () => {
+        const getData = async () => {
             const response = await getRoomsPersonal();
             if (isMounted && response) {
                 console.log(response.data.rooms);
                 setRooms(response.data.rooms);
             }
         };
-        fetchData();
+        getData();
         return () => {
             isMounted = false;
         };

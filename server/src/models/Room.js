@@ -18,7 +18,7 @@ const Room = new Schema(
         price: { type: Number, required: true },
         isAvailable: { type: Boolean, required: true, default: false },
     },
-    { timestamp: true }
+    { timestamps: true }
 );
 Room.plugin(mongooseDelete, { overrideMethods: 'all' });
 

@@ -12,7 +12,6 @@ import { useUser } from '@/store/userData';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
 import { createRoom } from '@/api/api';
-import { useRouter } from 'next/navigation';
 
 //type
 interface PostRoomProps {
@@ -24,7 +23,6 @@ type Coordinates = {
 } | null;
 
 const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
-    const router = useRouter();
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues } = useForm();
     // const [typeRoom, setTypeRoom] = useState<number | null>(null);
@@ -125,9 +123,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
             });
             if (response) {
                 toast.success('Đăng tìm phòng thành công!');
-                setTimeout(() => {
-                    router.push('/profile/listRoom');
-                }, 1000);
+                setFormVisible(false);
             }
         } catch (error) {
             console.error('Có lỗi xảy ra trong quá trình upload:', error);
@@ -339,7 +335,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 </div>
                             )}
                         </div>
-                        <button className="px-2 py-1 rounded-[10px] bg-rootColor hover:bg-[#699ba3 ] text-white mt-3">
+                        <button className="px-2 py-1 rounded-[10px] bg-rootColor hover:bg-[#699ba3] text-white mt-3">
                             Đăng tin
                         </button>
                     </form>

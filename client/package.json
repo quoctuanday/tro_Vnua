@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tinymce/tinymce-react": "^5.1.1",
     "axios": "^1.7.7",
+    "date-fns": "^4.1.0",
     "firebase": "^11.0.1",
     "leaflet": "^1.9.4",
     "next": "15.0.2",
