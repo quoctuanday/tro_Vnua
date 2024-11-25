@@ -7,6 +7,7 @@ import { HiMiniPencilSquare } from 'react-icons/hi2';
 
 function ProfilePage() {
     const { userLoginData } = useUser();
+
     if (userLoginData)
         return (
             <div className="p-[1.3rem]">

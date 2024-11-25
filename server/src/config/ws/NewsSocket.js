@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const Room = require('../../models/Room');
+const News = require('../../models/News');
 
-function roomSocket(io) {
-    const changeStream = Room.watch();
+function newsSocket(io) {
+    const changeStream = News.watch();
 
     changeStream.on('change', (change) => {
         let eventType;
@@ -12,7 +12,7 @@ function roomSocket(io) {
             case 'insert':
                 eventType = 'create';
                 updateData = change.fullDocument;
-                console.log('room created');
+                console.log('news created');
 
                 break;
             case 'update':
@@ -21,12 +21,12 @@ function roomSocket(io) {
                     _id: change.documentKey._id,
                     updatedFields: change.updateDescription.updatedFields,
                 };
-                console.log('room updated');
+                console.log('news updated');
                 break;
             case 'delete':
                 eventType = 'delete';
                 updateData = { _id: change.documentKey._id };
-                console.log('room deleted');
+                console.log('news deleted');
 
                 break;
             default:
@@ -34,7 +34,7 @@ function roomSocket(io) {
                 return;
         }
 
-        io.emit('room-update', { event: eventType, data: updateData });
+        io.emit('news-update', { event: eventType, data: updateData });
     });
 
     changeStream.on('error', (err) => {
@@ -42,4 +42,4 @@ function roomSocket(io) {
     });
 }
 
-module.exports = roomSocket;
+module.exports = newsSocket;

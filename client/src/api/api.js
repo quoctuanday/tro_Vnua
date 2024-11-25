@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:8080/api' });
+const api = axios.create({ baseURL: process.env.NEXT_PUBLIC_SERVER_URL });
 export default api;
 
 async function refreshAccessToken() {
@@ -99,3 +99,7 @@ export const createNews = (data) => api.post('/news/createNews', { data });
 export const getNewsPersonal = () => api.get('/news/getNewsPersonal');
 export const updateNews = (data) => api.put('/news/updateNews', { data });
 export const deleteNews = (data) => api.delete(`/news/deleteNews/${data}`);
+export const getDeletedNews = () => api.get('news/getDeletedNews');
+export const restoreNews = (newsId) => api.patch(`/news/restore/${newsId}`);
+export const forceDeletedNews = (newsId) =>
+    api.delete(`/news/forceDelete/${newsId}`);

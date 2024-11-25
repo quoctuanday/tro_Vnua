@@ -1,32 +1,43 @@
 const WebSocket = require('ws');
-const roomSocket = require('./RoomSocket');
-const userSocket = require('./UserSocket');
+const roomSocket = require('./UserSocket');
+const userSocket = require('./RoomSocket');
+const { CLIENT_PORT } = require('../env');
 
-function configureWebSocket() {
-    const wss = new WebSocket.Server({
-        port: 8000,
-        clientTracking: true,
-        maxPayload: 100000,
+const { Server } = require('socket.io');
+const newsSocket = require('./NewsSocket');
+
+function configureWebSocket(server) {
+    const io = new Server(server, {
+        cors: {
+            origin: `http://localhost:${CLIENT_PORT}`,
+            methods: ['GET', 'POST'],
+            allowedHeaders: ['Content-Type'],
+            credentials: true,
+        },
     });
 
     console.log('WebSocket server đã khởi động');
 
-    roomSocket(wss);
-    userSocket(wss);
+    roomSocket(io);
+    userSocket(io);
+    newsSocket(io);
 
-    wss.on('connection', (ws) => {
-        console.log('Client kết nối WebSocket');
+    io.on('connection', (socket) => {
+        console.log('A user connected');
 
-        ws.on('message', (message) => {
-            console.log('Client gửi tin nhắn:', message);
+        socket.on('Hi server', () => {
+            console.log('Received Hi server');
+            socket.emit('message', 'Hello from the server');
+        });
+        socket.on('send_message', (message) => {
+            console.log('Received message:', message);
+            io.emit('recieve_message', `Server received: ${message}`);
         });
 
-        ws.on('close', () => {
-            console.log('Client ngắt kết nối');
+        socket.on('disconnect', () => {
+            console.log('User disconnected');
         });
     });
-
-    return wss;
 }
 
 module.exports = configureWebSocket;

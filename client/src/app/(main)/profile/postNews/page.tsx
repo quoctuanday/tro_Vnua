@@ -9,8 +9,11 @@ import { FaPencil } from 'react-icons/fa6';
 import { MdAddBox } from 'react-icons/md';
 import dateConvert from '@/utils/convertDate';
 import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
+import { useUser } from '@/store/userData';
 
 function PostNewsPage() {
+    const { socket } = useUser();
     const [formVisible, setFormVisible] = useState(false);
     const [news, setNews] = useState<News[]>([]);
     const [currentNewsIndex, setCurrentNewsIndex] = useState<number | null>(
@@ -30,10 +33,14 @@ function PostNewsPage() {
             }
         };
         getData();
+        if (!socket) return;
+        socket.on('news-update', () => {
+            getData();
+        });
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [socket]);
 
     const handleDelete = async (newsId: string) => {
         const response = await deleteNews(newsId);
@@ -81,7 +88,7 @@ function PostNewsPage() {
                             setAction(true);
                         }}
                     >
-                        <MdAddBox className="ml-2 hover:text-rootColor " />
+                        <MdAddBox className="ml-2 hover:text-rootColor cursor-pointer" />
                     </div>
                 </div>
 
@@ -92,7 +99,7 @@ function PostNewsPage() {
                               setFormVisible={setFormVisible}
                               action={true}
                               news={news}
-                              newsIndex={currentNewsIndex}
+                              newsIndex={0}
                           />
                       )
                     : formVisible &&
@@ -100,7 +107,7 @@ function PostNewsPage() {
                           <PostNews
                               setFormVisible={setFormVisible}
                               action={false}
-                              news={news}
+                              news={sortedNews}
                               newsIndex={currentNewsIndex}
                           />
                       )}
@@ -131,6 +138,12 @@ function PostNewsPage() {
                             }}
                         />
                     )}
+                    <Link
+                        href={'/profile/TrashNews'}
+                        className="block ml-2 hover:text-rootColor"
+                    >
+                        <FaTrash />
+                    </Link>
                 </div>
 
                 <div className="mt-3">

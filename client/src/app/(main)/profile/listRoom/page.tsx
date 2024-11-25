@@ -13,14 +13,14 @@ import {
 } from 'react-icons/fa';
 import { MdAddBox } from 'react-icons/md';
 import Currency from '../../../../utils/convertCurrency';
-import useWebSocket from '../../../../utils/websocket';
 import { FaPencil } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
 import EditRoom from '@/components/EditRoom';
+import { useUser } from '@/store/userData';
 
 function ListRoomPage() {
-    const socketUrl = 'ws://localhost:8000';
+    const { socket } = useUser();
     const [rooms, setRooms] = useState<Room[]>([]);
     const [formVisible, setFormVisible] = useState(false);
     const [reverseSort, setReverseSort] = useState(false);
@@ -32,7 +32,6 @@ function ListRoomPage() {
     );
     const [editForm, setEditForm] = useState(false);
 
-    useWebSocket(socketUrl, setRooms);
     useEffect(() => {
         let isMounted = true;
         const getData = async () => {
@@ -43,10 +42,15 @@ function ListRoomPage() {
             }
         };
         getData();
+        if (!socket) return;
+        socket.on('room-update', () => {
+            console.log('Room updated');
+            getData();
+        });
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [socket]);
 
     //Sort rooms
     const getSortedRooms = () => {

@@ -1,23 +1,45 @@
-const WebSocket = require('ws');
 const mongoose = require('mongoose');
 const User = require('../../models/User');
 
-function userSocketSocket(wss) {
-    User.watchUserChanges = (updateData) => {
-        wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(updateData));
-            }
-        });
-    };
+function userSocket(io) {
+    const changeStream = User.watch();
 
-    User.schema.post('save', function (doc) {
-        User.watchUserChanges({ event: 'update', data: doc });
+    changeStream.on('change', (change) => {
+        let eventType;
+        let updateData = {};
+
+        switch (change.operationType) {
+            case 'insert':
+                eventType = 'create';
+                updateData = change.fullDocument;
+                console.log('user created');
+
+                break;
+            case 'update':
+                eventType = 'update';
+                updateData = {
+                    _id: change.documentKey._id,
+                    updatedFields: change.updateDescription.updatedFields,
+                };
+                console.log('user updated');
+                break;
+            case 'delete':
+                eventType = 'delete';
+                updateData = { _id: change.documentKey._id };
+                console.log('user deleted');
+
+                break;
+            default:
+                console.log('Unhandled change type:', change.operationType);
+                return;
+        }
+
+        io.emit('user-update', { event: eventType, data: updateData });
     });
 
-    User.schema.post('remove', function (doc) {
-        User.watchUserChanges({ event: 'delete', data: doc });
+    changeStream.on('error', (err) => {
+        console.error('ChangeStream error:', err);
     });
 }
 
-module.exports = userSocketSocket;
+module.exports = userSocket;

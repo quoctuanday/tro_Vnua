@@ -56,5 +56,44 @@ class NewsController {
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
+    getDeleteNews(req, res) {
+        const userId = req.user.userId;
+        News.findWithDeleted({ userId: userId, deleted: true })
+            .then((news) => {
+                if (news) {
+                    res.status(200).json({ message: 'List News delete', news });
+                }
+            })
+            .catch((error) => {
+                console.log('error get list news deleted', error);
+                res.status(500).json({ message: 'Internal server error' });
+            });
+    }
+    restoreNewsPersonal(req, res, next) {
+        const userId = req.user.userId;
+        const newsId = req.params.newsId;
+        News.restore({ _id: newsId, userId: userId })
+            .then(() => {
+                console.log('Restore News ok!');
+                res.status(200).json({ message: 'News has been restore' });
+            })
+            .catch((error) => {
+                console.log('Error restore News', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    forceDeleteNewsPersonal(req, res, next) {
+        const newsId = req.params.newsId;
+        News.deleteOne({ _id: newsId })
+            .then(() => {
+                res.status(200).json({
+                    message: 'News has been force deleted ',
+                });
+            })
+            .catch((error) => {
+                console.log('error force delete: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
 }
 module.exports = new NewsController();
