@@ -3,11 +3,16 @@ const Room = require('../models/Room');
 class RoomController {
     //For personal use only
     create(req, res, next) {
-        console.log(req.body.data);
         const data = req.body.data.data;
         data.userId = req.body.data.userId;
         data.images = req.body.data.successfulUploads;
         data.urlSaveImages = req.body.data.folderPath;
+        const location = data.location;
+        delete data.location;
+        data.location = {
+            name: location,
+            coordinates: req.body.data.coords,
+        };
         const room = new Room(data);
         room.save()
             .then((room) => {

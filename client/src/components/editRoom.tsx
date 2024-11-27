@@ -54,7 +54,7 @@ const EditRoom: React.FC<PostRoomProps> = ({
         setValue('ownerName', rooms[roomIndex].ownerName);
         setValue('contactNumber', rooms[roomIndex].contactNumber);
         setValue('contactEmail', rooms[roomIndex].contactEmail);
-        setValue('location', rooms[roomIndex].location);
+        setValue('location', rooms[roomIndex].location.name);
         setValue('price', rooms[roomIndex].price);
         setValue('acreage', rooms[roomIndex].acreage);
 
@@ -363,6 +363,7 @@ const EditRoom: React.FC<PostRoomProps> = ({
                                     <CustomerMap
                                         longitude={coords?.longitude}
                                         latitude={coords?.latitude}
+                                        setCoord={setCoords}
                                     />
                                 </div>
                             )}

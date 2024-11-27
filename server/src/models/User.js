@@ -11,7 +11,12 @@ const User = new Schema(
         gender: { type: String, enum: ['Nam', 'Nữ'] },
         phoneNumber: { type: String, maxLength: 255 },
         DOB: { type: Date },
-        role: { type: Boolean, required: true, default: false },
+        role: {
+            type: String,
+            enum: ['admin', 'moderator', 'user'],
+            default: 'user',
+            required: true,
+        },
         isBlocked: { type: Boolean, default: false },
     },
     { timestamps: true }

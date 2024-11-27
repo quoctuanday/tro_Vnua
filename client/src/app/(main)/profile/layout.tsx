@@ -9,6 +9,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { logout, updateProfile } from '@/api/api';
 import { FaSpinner } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import { MdAdminPanelSettings } from 'react-icons/md';
+import { TbJewishStarFilled } from 'react-icons/tb';
 
 export default function ProfileLayout({
     children,
@@ -132,6 +134,14 @@ export default function ProfileLayout({
                                         setVisileFormImage(!visibleFormImage)
                                     }
                                 ></Image>
+                                {userLoginData.role === 'admin' && (
+                                    <MdAdminPanelSettings className="absolute text-[1.2rem] bottom-1 right-1 text-blue-800" />
+                                )}
+
+                                {userLoginData.role === 'moderator' && (
+                                    <TbJewishStarFilled className="absolute text-[1.2rem] bottom-1 right-1 text-yellow-500" />
+                                )}
+
                                 {uploading && (
                                     <div className="absolute top-0  w-[5rem] h-[5rem] bg-[#ccc] text-white opacity-50 flex items-center justify-center rounded-full">
                                         <FaSpinner className="spin" />
@@ -202,12 +212,21 @@ export default function ProfileLayout({
                             Bài đăng thuê trọ
                         </Link>
                         <Link
-                            href={'/profile/postNews'}
+                            href={'/profile/roommateFinder'}
                             className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
                         >
-                            Bài đăng tin tức
+                            Tìm người ở ghép
                         </Link>
-                        {userLoginData.role && (
+                        {(userLoginData.role === 'admin' ||
+                            userLoginData.role === 'moderator') && (
+                            <Link
+                                href={'/profile/postNews'}
+                                className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"
+                            >
+                                Bài đăng tin tức
+                            </Link>
+                        )}
+                        {userLoginData.role === 'admin' && (
                             <Link
                                 href={'/admin'}
                                 className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"

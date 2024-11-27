@@ -1,5 +1,6 @@
 'use client';
 import CustomerMap from '@/components/Map';
+import LocationInput from '@/components/locationInput';
 import Image from 'next/image';
 import React, { useRef, useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
@@ -120,6 +121,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                 userId,
                 folderPath,
                 successfulUploads,
+                coords,
             });
             if (response) {
                 toast.success('Đăng tìm phòng thành công!');
@@ -260,7 +262,14 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                             </div>
                         </div>
                         <div className="mt-3">
-                            <div className="roboto-bold">Hình ảnh:</div>
+                            <div className="flex items-end">
+                                <div className="roboto-bold">Hình ảnh:</div>
+                                <p className="ml-2 text-[#ccc] text-[0.9rem]">
+                                    (Phải bao gồm hình ảnh mặt tiền, các phòng,
+                                    nhà vệ sinh, chỗ nấu ăn nếu có, đường ngõ
+                                    liền kề )
+                                </p>
+                            </div>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -305,8 +314,13 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                             </div>
                         </div>
                         <div className="mt-3 roboto-bold">
-                            <h1 className="roboto-bold">Vị trí</h1>
-                            <div className="mt-1 w-full flex items-center">
+                            <h1 className="roboto-bold">Vị trí: </h1>
+                            <LocationInput />
+                            <input
+                                className="px-2 py-1 mt-2 border-2 rounded-[10px] outline-none"
+                                type="text"
+                            />
+                            <div className="mt-2 w-full flex items-center">
                                 <input
                                     {...register('location', {
                                         required: true,
@@ -326,6 +340,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                     <CustomerMap
                                         longitude={coords?.longitude}
                                         latitude={coords?.latitude}
+                                        setCoord={setCoords}
                                     />
                                 </div>
                             )}

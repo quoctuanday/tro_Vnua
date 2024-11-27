@@ -7,7 +7,13 @@ export type Room = {
     contactNumber: string;
     contactEmail: string;
     description: string;
-    location: string;
+    location: {
+        name: string;
+        coordinates: {
+            latitude: number;
+            longitude: number;
+        };
+    };
     urlSaveImages: string;
     price: number;
     acreage: number;

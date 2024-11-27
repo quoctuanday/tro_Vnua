@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({ baseURL: process.env.NEXT_PUBLIC_SERVER_URL });
+const api_map = axios.create({ baseURL: 'https://provinces.open-api.vn/api' });
 export default api;
 
 async function refreshAccessToken() {
@@ -103,3 +104,7 @@ export const getDeletedNews = () => api.get('news/getDeletedNews');
 export const restoreNews = (newsId) => api.patch(`/news/restore/${newsId}`);
 export const forceDeletedNews = (newsId) =>
     api.delete(`/news/forceDelete/${newsId}`);
+
+//Map
+export const getProvince = () => api_map.get('/p/');
+export const getDistrict = (code) => api_map.get(`/p/${code}?depth=3`);

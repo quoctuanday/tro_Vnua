@@ -181,7 +181,7 @@ function ListRoomPage() {
                                                 /tháng{' '}
                                             </div>
                                             <div className="ml-2 max_line_1 ">
-                                                {room.location}
+                                                {room.location.name}
                                             </div>
                                         </div>
                                     </div>
