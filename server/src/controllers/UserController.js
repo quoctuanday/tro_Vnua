@@ -140,5 +140,31 @@ class UserController {
                 res.status(500).json({ error: 'Internal Server error' });
             });
     }
+
+    //All User
+    getAllUsers(req, res, next) {
+        User.find()
+            .then((users) => {
+                if (!users) res.status(404).json({ error: 'User not found' });
+                res.status(200).json({ message: 'List all user', users });
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json({ error: 'Internal Server error' });
+            });
+    }
+    updateUser(req, res) {
+        const userId = req.params.userId;
+        const data = req.body.data;
+        User.findByIdAndUpdate(userId, data)
+            .then((user) => {
+                if (!user) res.status(404).json({ error: 'User not found' });
+                res.status(200).json({ message: 'User updated successfully' });
+            })
+            .catch((err) => {
+                console.error(err);
+                res.status(500).json({ error: 'Internal Server error' });
+            });
+    }
 }
 module.exports = new UserController();

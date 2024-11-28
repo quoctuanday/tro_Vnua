@@ -16,9 +16,7 @@ function PostNewsPage() {
     const { socket } = useUser();
     const [formVisible, setFormVisible] = useState(false);
     const [news, setNews] = useState<News[]>([]);
-    const [currentNewsIndex, setCurrentNewsIndex] = useState<number | null>(
-        null
-    );
+    const [currentNewsIndex, setCurrentNewsIndex] = useState<number | null>(0);
     const [action, setAction] = useState(true);
     const [reverseSort, setReverseSort] = useState(false);
     const [sortCriterion, setSortCriterion] = useState<'name' | 'date'>('date');
@@ -166,18 +164,6 @@ function PostNewsPage() {
                                         <div className="roboto-bold">
                                             Ngày đăng:{' '}
                                             {dateConvert(news.createdAt)}
-                                        </div>
-                                        <div className="ml-2 flex items-center">
-                                            Trạng thái:
-                                            {news.isAvailable ? (
-                                                <p className="ml-1">
-                                                    Đã được duyệt
-                                                </p>
-                                            ) : (
-                                                <p className="ml-1">
-                                                    Chưa duyệt
-                                                </p>
-                                            )}
                                         </div>
                                     </div>
                                 </div>

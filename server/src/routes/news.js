@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const newsController = require('../controllers/NewsController');
 const authenticateToken = require('../middleware/auth');
+const authorizeRole = require('../middleware/author');
 
 router.delete(
     '/forceDelete/:newsId',
@@ -21,6 +22,11 @@ router.get(
     authenticateToken,
     newsController.getNewsPersonal
 );
-router.post('/createNews', authenticateToken, newsController.create);
+router.post(
+    '/createNews',
+    authenticateToken,
+    authorizeRole(['admin', 'moderator']),
+    newsController.create
+);
 
 module.exports = router;

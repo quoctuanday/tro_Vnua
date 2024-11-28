@@ -25,13 +25,14 @@ type Coordinates = {
 
 const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     const { userLoginData } = useUser();
-    const { register, handleSubmit, getValues } = useForm();
+    const { register, handleSubmit, getValues, setValue } = useForm();
     // const [typeRoom, setTypeRoom] = useState<number | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
     const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
     const [error, setError] = useState();
+    const [location, setLocation] = useState('');
 
     // const handleClickType = (index: number) => {
     //     setTypeRoom(typeRoom === index ? null : index);
@@ -72,9 +73,13 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
 
     //set map
     const searchMap = async () => {
+        console.log(location);
         const locationValue = getValues('location');
-        if (locationValue) {
-            getCoordinates(locationValue)
+        const fullAddress = `${locationValue}, ${location}`;
+        setValue('location', fullAddress);
+        console.log(fullAddress);
+        if (fullAddress) {
+            getCoordinates(fullAddress)
                 .then((coords: { latitude: number; longitude: number }) =>
                     setCoords(coords)
                 )
@@ -315,22 +320,22 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                         </div>
                         <div className="mt-3 roboto-bold">
                             <h1 className="roboto-bold">Vị trí: </h1>
-                            <LocationInput />
-                            <input
-                                className="px-2 py-1 mt-2 border-2 rounded-[10px] outline-none"
-                                type="text"
-                            />
-                            <div className="mt-2 w-full flex items-center">
-                                <input
-                                    {...register('location', {
-                                        required: true,
-                                    })}
-                                    type="text"
-                                    className="rounded-[10px] px-2 py-1 border-2 outline-none w-[80%]"
-                                />
+                            <LocationInput setLocation={setLocation} />
+                            <h1 className="mt-2 ">Ngõ đường:</h1>
+                            <div className="w-full grid grid-cols-5 gap-3">
+                                <div className="w-full col-span-4">
+                                    <input
+                                        {...register('location', {
+                                            required: true,
+                                        })}
+                                        placeholder="VD:Ngõ 64, phố Ngô Xuân Quảng, An Lạc"
+                                        type="text"
+                                        className="rounded-[10px] w-full mt-1 px-2 py-1 border-2 outline-none"
+                                    />
+                                </div>
                                 <div
                                     onClick={searchMap}
-                                    className="ml-2 bg-rootColor cursor-pointer text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
+                                    className="ml-2 col-span-1 text-center mt-2 bg-rootColor cursor-pointer text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
                                 >
                                     Tìm kiếm
                                 </div>

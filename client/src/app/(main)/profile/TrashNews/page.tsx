@@ -147,18 +147,6 @@ function TrashNewsPage() {
                                                         news.createdAt
                                                     )}
                                                 </div>
-                                                <div className="ml-2 flex items-center">
-                                                    Trạng thái:
-                                                    {news.isAvailable ? (
-                                                        <p className="ml-1">
-                                                            Đã được duyệt
-                                                        </p>
-                                                    ) : (
-                                                        <p className="ml-1">
-                                                            Chưa duyệt
-                                                        </p>
-                                                    )}
-                                                </div>
                                             </div>
                                         </div>
                                         <div className="ml-auto flex items-center">

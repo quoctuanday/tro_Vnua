@@ -82,6 +82,11 @@ export const getUser = () => api.get('/users/getUser');
 export const updateProfile = (data) =>
     api.put('/users/updateProfile', { data });
 
+//All User
+export const getAllUsers = () => api.get('/users/getAllUsers');
+export const updateUser = (userId, data) =>
+    api.put(`/users/updatedUser/${userId}`, { data });
+
 //Room personal
 export const createRoom = (data) => api.post('/rooms/createRoom', { data });
 export const getRoomsPersonal = () => api.get('/rooms/getRoomListPerson');

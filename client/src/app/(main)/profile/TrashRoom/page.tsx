@@ -157,14 +157,14 @@ function TrashRoomPage() {
                                                 {room.images.length}
                                             </p>
                                         </div>
-                                        <div className="ml-2 flex flex-col justify-between max-w-[26.8rem] h-full">
-                                            <div className="roboto-bold max-w-[26.8rem] max_line_1 ">
+                                        <div className="ml-2 flex flex-col justify-between max-w-[22.8rem] h-full">
+                                            <div className="roboto-bold max-w-[22.8rem] max_line_1 ">
                                                 {room.title}
                                             </div>
                                             <div className="max_line_2 ">
                                                 {room.description}
                                             </div>
-                                            <div className="flex items-center text-rootColor">
+                                            <div className="flex items-center text-rootColor max-w-[22.8rem]">
                                                 <div className="roboto-bold">
                                                     {Currency(
                                                         room.price,
@@ -173,7 +173,7 @@ function TrashRoomPage() {
                                                     /tháng{' '}
                                                 </div>
                                                 <div className="ml-2 max_line_1 ">
-                                                    {room.location}
+                                                    {room.location.name}
                                                 </div>
                                             </div>
                                         </div>

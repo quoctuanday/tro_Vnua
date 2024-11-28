@@ -16,7 +16,7 @@ import Currency from '../../../../utils/convertCurrency';
 import { FaPencil } from 'react-icons/fa6';
 import toast, { Toaster } from 'react-hot-toast';
 import Link from 'next/link';
-import EditRoom from '@/components/EditRoom';
+import EditRoom from '@/components/editRoom';
 import { useUser } from '@/store/userData';
 
 function ListRoomPage() {

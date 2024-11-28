@@ -2,6 +2,10 @@
 import { getDistrict, getProvince } from '@/api/api';
 import React, { useEffect, useRef, useState } from 'react';
 
+interface props {
+    setLocation: React.Dispatch<React.SetStateAction<string>>;
+}
+
 type Ward = {
     code: number;
     codename: string;
@@ -28,7 +32,7 @@ type Province = {
     phone_code: number;
 };
 
-function LocationInput() {
+function LocationInput({ setLocation }: props) {
     const [province, setProvince] = useState<Province[]>([]);
     const [districts, setDistricts] = useState<District[]>([]);
     const [wards, setWards] = useState<Ward[]>([]);
@@ -113,6 +117,18 @@ function LocationInput() {
         if (wardInputRef.current && dropdownWardRef.current) {
             wardInputRef.current.value = selectedWard.name;
             dropdownWardRef.current.classList.add('hidden');
+        }
+        if (
+            provinceInputRef.current &&
+            districtInputRef.current &&
+            wardInputRef.current
+        ) {
+            const ward = wardInputRef.current.value;
+            const district = districtInputRef.current.value;
+            const province = provinceInputRef.current.value;
+
+            const fullAddress = `${ward}, ${district}, ${province}`;
+            setLocation(fullAddress);
         }
     };
 

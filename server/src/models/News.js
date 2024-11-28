@@ -8,7 +8,6 @@ const News = new Schema(
         title: { type: String, required: true },
         content: { type: String, required: true },
         image: { type: String },
-        isAvailable: { type: Boolean, required: true, default: false },
     },
     { timestamps: true }
 );
