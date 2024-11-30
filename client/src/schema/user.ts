@@ -7,7 +7,7 @@ export type User = {
     gender?: string;
     phoneNumber?: string;
     DOB?: Date;
-    role: string;
+    role: 'admin' | 'moderator' | 'user';
     isBlocked: boolean;
     createdAt?: string;
     updatedAt?: string;
