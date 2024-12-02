@@ -7,7 +7,7 @@ const {
 } = require('../config/env/index');
 
 class UserController {
-    createUser(req, res, next) {
+    createUser(req, res) {
         let { passwordConfirm, ...data } = req.body.data;
         User.findOne({ email: data.email }).then((user) => {
             if (!user) {
@@ -39,7 +39,7 @@ class UserController {
         });
     }
 
-    async login(req, res, next) {
+    async login(req, res) {
         try {
             const data = req.body.data;
             User.findOne({ email: data.email }).then(async (user) => {
@@ -57,7 +57,7 @@ class UserController {
                 const accessToken = jwt.sign(
                     { userId: user._id, role: user.role },
                     ACCESS_TOKEN_SECRET,
-                    { expiresIn: '1h' }
+                    { expiresIn: '5h' }
                 );
                 const refreshToken = jwt.sign(
                     { userId: user._id, role: user.role },
@@ -80,12 +80,12 @@ class UserController {
         }
     }
 
-    logOut(req, res, next) {
+    logOut(req, res) {
         res.clearCookie('refreshToken');
         res.status(200).json({ message: 'Log out successfully' });
     }
 
-    refreshToken(req, res, next) {
+    refreshToken(req, res) {
         const refreshToken = req.cookies.refreshToken;
         console.log('refresh token', refreshToken);
         if (!refreshToken) return res.status(401);
@@ -102,14 +102,14 @@ class UserController {
                 const newAccessToken = jwt.sign(
                     { userId: user.userId, role: user.role },
                     ACCESS_TOKEN_SECRET,
-                    { expiresIn: '1h' }
+                    { expiresIn: '5h' }
                 );
                 res.json({ accessToken: newAccessToken });
             }
         );
     }
 
-    getUser(req, res, next) {
+    getUser(req, res) {
         const userId = req.user.userId;
         console.log(req.user);
         console.log(userId);
@@ -126,7 +126,7 @@ class UserController {
             });
     }
 
-    updateProfile(req, res, next) {
+    updateProfile(req, res) {
         const userId = req.user.userId;
         const data = req.body.data;
         console.log(data);
@@ -142,7 +142,7 @@ class UserController {
     }
 
     //All User
-    getAllUsers(req, res, next) {
+    getAllUsers(req, res) {
         User.find()
             .then((users) => {
                 if (!users) res.status(404).json({ error: 'User not found' });
@@ -166,5 +166,7 @@ class UserController {
                 res.status(500).json({ error: 'Internal Server error' });
             });
     }
+
+    countPosts(req, res) {}
 }
 module.exports = new UserController();

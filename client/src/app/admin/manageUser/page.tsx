@@ -10,6 +10,7 @@ import { LuEye, LuLock, LuUnlock } from 'react-icons/lu';
 import { useUser } from '@/store/userData';
 import Pagination from '@/components/pagination';
 import { AiOutlineRedo } from 'react-icons/ai';
+import InfoUser from '@/components/infoUser';
 
 type Role = 'admin' | 'moderator' | 'user';
 type Status = 'both' | 'unBlocked' | 'blocked';
@@ -25,6 +26,8 @@ function ManageUserPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedRoles, setSelectedRoles] = useState<Role[]>([]);
     const [selectedStatus, setSelectedStatus] = useState<Status>('both');
+    const [infoForm, setInfoForm] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
         const getData = async () => {
@@ -53,7 +56,7 @@ function ManageUserPage() {
 
     //Search
     const handleSearch = () => {
-        const searchResults = filterUser.filter((user) => {
+        const searchResults = users.filter((user) => {
             if (!searchRef.current) return;
             const value = searchRef.current.value;
             const matchUserName = user.userName
@@ -66,6 +69,7 @@ function ManageUserPage() {
         });
         console.log(searchResults);
         if (searchResults.length > 0) {
+            setMessage('');
             setCurrentPage(1);
             setFilterUser(searchResults);
         } else {
@@ -93,7 +97,7 @@ function ManageUserPage() {
     };
 
     const handleFilter = () => {
-        const filterResult = filterUser.filter((user) => {
+        const filterResult = users.filter((user) => {
             const matchRole =
                 selectedRoles.length === 0 || selectedRoles.includes(user.role);
             const matchStatus =
@@ -103,6 +107,9 @@ function ManageUserPage() {
             return matchRole && matchStatus;
         });
         console.log(filterResult);
+        if (!filterResult) {
+            setMessage('Không tìm thấy tài khoản nào !');
+        }
         setFilterUser(filterResult);
         setIsFilterOpen(false);
     };
@@ -160,7 +167,9 @@ function ManageUserPage() {
                         </button>
                         <div
                             className={`${
-                                isFilterOpen ? 'opacity-100 ' : 'opacity-0 '
+                                isFilterOpen
+                                    ? 'opacity-100 block '
+                                    : 'opacity-0 hidden'
                             } bg-white p-3 rounded absolute top-[100%] shadow-custom-light right-[100%] w-[30rem] transition-all duration-500 ease-in-out`}
                         >
                             <div>
@@ -317,7 +326,14 @@ function ManageUserPage() {
                                     {dateConvert(user.createdAt)}
                                 </div>
                                 <div className="col-span-1 py-2 flex justify-center items-center roboto-bold border-[1px]">
-                                    <LuEye className="text-blue-400 cursor-pointer" />
+                                    <button
+                                        onClick={() => {
+                                            setInfoForm(true);
+                                            setSelectedUser(user);
+                                        }}
+                                    >
+                                        <LuEye className="text-blue-400 cursor-pointer" />
+                                    </button>
                                     {user.isBlocked ? (
                                         <button className="ml-3">
                                             {' '}
@@ -348,6 +364,12 @@ function ManageUserPage() {
                                 </div>
                             </div>
                         ))}
+                        {infoForm && (
+                            <InfoUser
+                                user={selectedUser}
+                                setFormOpen={setInfoForm}
+                            />
+                        )}
                         <Pagination
                             currentPage={currentPage}
                             totalPage={totalPages}

@@ -1,6 +1,7 @@
 export type Room = {
     _id: string;
     userId: string;
+    userName?: string;
     title: string;
     images: string;
     ownerName: string;

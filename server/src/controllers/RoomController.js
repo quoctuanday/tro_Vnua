@@ -118,5 +118,25 @@ class RoomController {
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
+    getAllRooms(req, res) {
+        Room.find()
+            .populate('userId', 'userName')
+            .then((rooms) => {
+                if (!rooms) res.status(404).json({ error: 'Rooms not found' });
+                const formattedRooms = rooms.map((room) => {
+                    const { userId, ...rest } = room.toObject();
+                    return {
+                        ...rest,
+                        userId: userId?._id || null,
+                        userName: userId?.userName || null,
+                    };
+                });
+                res.status(200).json({ message: 'List room', formattedRooms });
+            })
+            .catch((error) => {
+                console.log('Get all rooms error: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
 }
 module.exports = new RoomController();

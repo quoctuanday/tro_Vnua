@@ -2,7 +2,16 @@ const express = require('express');
 const router = express.Router();
 const roomController = require('../controllers/RoomController');
 const authenticateToken = require('../middleware/auth');
+const authorization = require('../middleware/author');
 
+//For all user
+router.get(
+    '/getAllRooms',
+    authenticateToken,
+    authorization(['admin', 'moderator']),
+    roomController.getAllRooms
+);
+//For personal user
 router.put(
     '/updateRoomPersonal',
     authenticateToken,
