@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const roomSocket = require('./UserSocket');
 const userSocket = require('./RoomSocket');
+const categorySocket = require('./CategorySocket');
 const { CLIENT_PORT } = require('../env');
 
 const { Server } = require('socket.io');
@@ -18,6 +19,7 @@ function configureWebSocket(server) {
 
     console.log('WebSocket server đã khởi động');
 
+    categorySocket(io);
     roomSocket(io);
     userSocket(io);
     newsSocket(io);

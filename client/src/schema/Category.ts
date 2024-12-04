@@ -1,8 +1,8 @@
 export type Category = {
     _id: string;
     name: string;
-    children: {
+    child: {
         name: string;
-        roomIds: string[];
+        roomId: string[];
     }[];
 };

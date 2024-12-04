@@ -115,3 +115,10 @@ export const forceDeletedNews = (newsId) =>
 //Map
 export const getProvince = () => api_map.get('/p/');
 export const getDistrict = (code) => api_map.get(`/p/${code}?depth=3`);
+
+//Category;
+export const createCategory = (data) => api.post('/category/create', { data });
+export const getCategory = () => api.get('/category/get');
+export const updateCategory = (id, data) =>
+    api.put(`/category/update/${id}`, { data });
+export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
