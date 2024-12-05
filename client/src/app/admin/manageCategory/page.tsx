@@ -17,11 +17,13 @@ import {
     IoMdArrowDropright,
 } from 'react-icons/io';
 import { IoTrashBin } from 'react-icons/io5';
+import { MdCancel, MdCheckCircle } from 'react-icons/md';
 
 function ManageCategoryPage() {
     const { socket } = useUser();
     const [category, setCategory] = useState<Category[] | null>(null);
     const inputAddRef = useRef<HTMLInputElement>(null);
+    const inputAddSubCateRef = useRef<HTMLInputElement>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
         null
     );
@@ -30,6 +32,7 @@ function ManageCategoryPage() {
     );
     const [childDeleted, setChildDeleted] = useState<number | null>(null);
     const [categoryId, setCategoryId] = useState<string[]>([]);
+    const [addSubCategory, setAddSubCategory] = useState<string | null>(null);
 
     useEffect(() => {
         const getData = async () => {
@@ -90,6 +93,35 @@ function ManageCategoryPage() {
                 setCategoryIdDeleted(null);
                 setChildDeleted(null);
                 toast.success('Xóa danh mục thành công!');
+            }
+        }
+    };
+    const handleAddSubCate = async () => {
+        if (inputAddSubCateRef.current && category) {
+            const categoryToUpdate = category.find(
+                (category) => category._id === addSubCategory
+            );
+
+            if (!categoryToUpdate) {
+                console.error('Danh mục không tồn tại');
+                return;
+            }
+            const dataChild = {
+                name: inputAddSubCateRef.current.value,
+            };
+            const updatedCategory = {
+                ...categoryToUpdate,
+                child: [...categoryToUpdate.child, dataChild],
+            };
+            const response = await updateCategory(addSubCategory, {
+                updatedCategory,
+            });
+            if (response) {
+                setCategoryIdDeleted(null);
+                setChildDeleted(null);
+                toast.success('Tạo danh mục thành công!');
+                setAddSubCategory(null);
+                inputAddSubCateRef.current.value = '';
             }
         }
     };
@@ -172,7 +204,14 @@ function ManageCategoryPage() {
                                                 {selectedCategoryId ===
                                                     category._id && (
                                                     <div className="absolute z-[10] border-2 w-[12rem] h-[5rem] bg-white top-[80%] right-[100%] rounded">
-                                                        <div className="p-2 hover:bg-rootColor hover:text-white cursor-pointer flex items-center">
+                                                        <div
+                                                            onClick={() =>
+                                                                setAddSubCategory(
+                                                                    category._id
+                                                                )
+                                                            }
+                                                            className="p-2 hover:bg-rootColor hover:text-white cursor-pointer flex items-center"
+                                                        >
                                                             <IoMdAddCircleOutline />
                                                             <p className="ml-2">
                                                                 Thêm danh mục
@@ -203,62 +242,93 @@ function ManageCategoryPage() {
                                             <ul className="pl-[1em]">
                                                 {category.child && (
                                                     <div className="">
-                                                        {category.child.length >
-                                                        0 ? (
-                                                            category.child.map(
-                                                                (
-                                                                    child,
-                                                                    index
-                                                                ) => (
-                                                                    <li
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px] first:h-[1.2rem]"
-                                                                    >
-                                                                        <div
-                                                                            className={`relative ${
-                                                                                index ===
-                                                                                0
-                                                                                    ? 'top-[0.2em]'
-                                                                                    : `top-[${
-                                                                                          1 +
-                                                                                          index *
-                                                                                              0.1
-                                                                                      }em]`
-                                                                            } bg-white px-2 py-1 rounded-l flex items-center justify-between
-                                                            `}
-                                                                        >
-                                                                            <span>
-                                                                                {
-                                                                                    child.name
-                                                                                }
-                                                                            </span>
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    setCategoryIdDeleted(
-                                                                                        category._id
-                                                                                    );
-                                                                                    setChildDeleted(
-                                                                                        index
-                                                                                    );
-                                                                                }}
-                                                                                className="hover:text-red-400"
-                                                                            >
-                                                                                <IoTrashBin />
-                                                                            </button>
+                                                        <li className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px] h-[1.2rem]">
+                                                            <div className="relative top-[0.1em] h-[2.1rem] bg-white px-2 py-1 rounded-l flex items-center justify-between w-full">
+                                                                <div className="flex items-center justify-between w-full">
+                                                                    {addSubCategory ===
+                                                                    category._id ? (
+                                                                        <div className="flex items-center justify-between w-full">
+                                                                            <div className="flex items-center w-[70%]">
+                                                                                <span>
+                                                                                    Nhập
+                                                                                    tên
+                                                                                    danh
+                                                                                    mục:
+                                                                                </span>
+                                                                                <input
+                                                                                    ref={
+                                                                                        inputAddSubCateRef
+                                                                                    }
+                                                                                    className="border-b-[1px] ml-2 outline-none w-[70%] border-dotted border-black"
+                                                                                    type="text"
+                                                                                />
+                                                                            </div>
+                                                                            <div className="flex items-center">
+                                                                                <button
+                                                                                    onClick={() =>
+                                                                                        setAddSubCategory(
+                                                                                            null
+                                                                                        )
+                                                                                    }
+                                                                                    className="p-1 text-[1rem] rounded hover:text-red-500 "
+                                                                                >
+                                                                                    <MdCancel />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() =>
+                                                                                        handleAddSubCate()
+                                                                                    }
+                                                                                    className="p-1 text-[1rem] rounded ml-1 hover:text-green-400 "
+                                                                                >
+                                                                                    <MdCheckCircle />
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
-                                                                    </li>
-                                                                )
-                                                            )
-                                                        ) : (
-                                                            <li className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px] h-[1.2rem]">
-                                                                <div className="relative top-[0.2em] bg-white px-2 py-1 rounded-l flex items-center justify-between">
-                                                                    <button className="px-2 py-1 hover:text-rootColor">
-                                                                        <IoMdAddCircleOutline />
-                                                                    </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                setAddSubCategory(
+                                                                                    category._id
+                                                                                )
+                                                                            }
+                                                                            className="px-2 py-1 hover:text-rootColor"
+                                                                        >
+                                                                            <IoMdAddCircleOutline />
+                                                                        </button>
+                                                                    )}
                                                                 </div>
-                                                            </li>
+                                                            </div>
+                                                        </li>
+                                                        {category.child.map(
+                                                            (child, index) => (
+                                                                <li
+                                                                    key={index}
+                                                                    className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px]"
+                                                                >
+                                                                    <div
+                                                                        className={`relative top-[1.1em] bg-white px-2 py-1 rounded-l flex items-center justify-between`}
+                                                                    >
+                                                                        <span>
+                                                                            {
+                                                                                child.name
+                                                                            }
+                                                                        </span>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setCategoryIdDeleted(
+                                                                                    category._id
+                                                                                );
+                                                                                setChildDeleted(
+                                                                                    index
+                                                                                );
+                                                                            }}
+                                                                            className="hover:text-red-400"
+                                                                        >
+                                                                            <IoTrashBin />
+                                                                        </button>
+                                                                    </div>
+                                                                </li>
+                                                            )
                                                         )}
                                                     </div>
                                                 )}

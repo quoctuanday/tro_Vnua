@@ -3,6 +3,6 @@ export type Category = {
     name: string;
     child: {
         name: string;
-        roomId: string[];
+        roomId?: string[];
     }[];
 };

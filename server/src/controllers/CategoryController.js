@@ -52,6 +52,7 @@ class CategoryController {
     update(req, res) {
         const categoryId = req.params.categoryId;
         const data = req.body.data.updatedCategory;
+        console.log(data);
         Category.findByIdAndUpdate(categoryId, data)
             .then((category) => {
                 if (!category)
