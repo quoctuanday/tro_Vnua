@@ -23,6 +23,14 @@ const Room = new Schema(
         urlSaveImages: { type: String },
         price: { type: Number, required: true },
         isAvailable: { type: Boolean, required: true, default: false },
+        ratings: [
+            {
+                userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  
+                rating: { type: Number, required: true },  
+                comment: { type: String, required: true },  
+                createdAt: { type: Date, default: Date.now },  
+            }
+        ],
     },
     { timestamps: true }
 );
