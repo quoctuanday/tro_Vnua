@@ -101,6 +101,8 @@ export const updateRoomPersonal = (data) =>
     api.put('/rooms/updateRoomPersonal', { data });
 //All Room
 export const getAllRooms = () => api.get('/rooms/getAllRooms');
+export const updateRoom = (id, data) =>
+    api.put(`/rooms/update/${id}`, { data });
 
 //News personal
 export const createNews = (data) => api.post('/news/createNews', { data });

@@ -2,7 +2,7 @@
 import CustomerMap from '@/components/Map';
 import LocationInput from '@/components/locationInput';
 import Image from 'next/image';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import { IoClose, IoCloseCircleOutline } from 'react-icons/io5';
 import getCoordinates from '../utils/locationIntoCoordinates';
@@ -12,7 +12,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
-import { createRoom } from '@/api/api';
+import { createRoom, getCategory } from '@/api/api';
+import { Category } from '@/schema/Category';
 
 //type
 interface PostRoomProps {
@@ -26,7 +27,8 @@ type Coordinates = {
 const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues, setValue } = useForm();
-    // const [typeRoom, setTypeRoom] = useState<number | null>(null);
+    const [category, setCategory] = useState<Category[]>([]);
+    const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
     const uploadImage = useRef<HTMLInputElement>(null);
@@ -34,9 +36,29 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     const [error, setError] = useState();
     const [location, setLocation] = useState('');
 
-    // const handleClickType = (index: number) => {
-    //     setTypeRoom(typeRoom === index ? null : index);
-    // };
+    useEffect(() => {
+        const getCategories = async () => {
+            const response = await getCategory();
+            if (response) {
+                const data = response.data.category;
+                console.log(data);
+                setCategory(data);
+            }
+        };
+        getCategories();
+    }, []);
+
+    //add categories
+    const addRoomIntoCategory = (id: string) => {
+        setChildCateId((prev) => {
+            if (prev.includes(id)) {
+                return prev.filter((childId) => childId !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+        console.log(childCateId);
+    };
 
     //Set image
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,6 +145,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
             console.log(data);
             const response = await createRoom({
                 data,
+                childCateId,
                 userId,
                 folderPath,
                 successfulUploads,
@@ -209,31 +232,46 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 />
                             </div>
                         </div>
-                        {/* <div className="mt-3 ">
-                            <div className="roboto-bold">Loại phòng: </div>
-                            <div className=" grid grid-cols-5 gap-2 mt-1">
-                                <div className="col-span-1 ">
-                                    <input
-                                        type="radio"
-                                        checked={typeRoom === 1}
-                                        onChange={() => setTypeRoom(1)}
-                                        className="hidden"
-                                    />
-
-                                    <label
-                                        className={`cursor-pointer mt-1  ${
-                                            typeRoom === 1
-                                                ? 'bg-rootColor text-white'
-                                                : 'bg-white border-2'
-                                        } rounded-[10px] py-1 px-2`}
-                                        onClick={() => handleClickType(1)}
-                                        style={{ userSelect: 'none' }}
-                                    >
-                                        Phòng đơn
-                                    </label>
+                        <div className="mt-3 ">
+                            {category.length > 0 && (
+                                <div className="">
+                                    <h1 className="roboto-bold">Danh mục:</h1>
+                                    {category.map((category) => (
+                                        <div
+                                            className="flex items-center mt-2"
+                                            key={category._id}
+                                        >
+                                            <h1>{category.name}:</h1>
+                                            {category.child.map((child) => (
+                                                <div
+                                                    className="ml-2"
+                                                    key={child._id}
+                                                >
+                                                    <button
+                                                        onClick={() =>
+                                                            addRoomIntoCategory(
+                                                                child._id
+                                                            )
+                                                        }
+                                                        className={`px-2 rounded-[10px] py-1 border-[1px] transition-colors duration-300
+                                                            ${
+                                                                childCateId.includes(
+                                                                    child._id
+                                                                )
+                                                                    ? 'bg-rootColor text-white'
+                                                                    : ''
+                                                            }
+                                                            `}
+                                                    >
+                                                        {child.name}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        </div> */}
+                            )}
+                        </div>
                         <div className="mt-3">
                             <div className="roboto-bold">Mô tả:</div>
                             <textarea

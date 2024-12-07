@@ -15,6 +15,7 @@ import {
     isWithinInterval,
     parseISO,
 } from 'date-fns';
+import InfoRoom from '@/components/infoRoom';
 
 type Status = 'both' | 'available' | 'unavailable';
 type Time = 'week' | 'month' | 'year' | 'specificTime' | null;
@@ -30,6 +31,8 @@ function ManagePostPage() {
     const [selectedStatus, setSelectedStatus] = useState<Status>('both');
     const [selectedTime, setSelectedTime] = useState<Time>(null);
     const [specificTimeValue, setSpecificTimeValue] = useState('');
+    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
 
     useEffect(() => {
         const getData = async () => {
@@ -396,10 +399,24 @@ function ManagePostPage() {
                                         : 'Chưa được duyệt'}
                                 </div>
                                 <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
-                                    Thao tác
+                                    <button
+                                        onClick={() => {
+                                            setSelectedRoom(room);
+                                            setFormOpen(true);
+                                        }}
+                                        className="px-2 py-1 rounded-[10px] bg-rootColor hover:bg-[#699ba3b8] text-white "
+                                    >
+                                        Xem
+                                    </button>
                                 </div>
                             </div>
                         ))}
+                        {formOpen && (
+                            <InfoRoom
+                                setFormOpen={setFormOpen}
+                                room={selectedRoom}
+                            />
+                        )}
                         <Pagination
                             currentPage={currentPage}
                             totalPage={totalPages}

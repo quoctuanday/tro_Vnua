@@ -5,6 +5,12 @@ const authenticateToken = require('../middleware/auth');
 const authorization = require('../middleware/author');
 
 //For all user
+router.put(
+    '/update/:roomId',
+    authenticateToken,
+    authorization(['admin', 'moderator']),
+    roomController.update
+);
 router.get(
     '/getAllRooms',
     authenticateToken,

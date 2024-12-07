@@ -1,4 +1,5 @@
 const Room = require('../models/Room');
+const Category = require('../models/Category');
 
 class RoomController {
     //For personal use only
@@ -13,11 +14,22 @@ class RoomController {
             name: location,
             coordinates: req.body.data.coords,
         };
+        const childIds = req.body.data.childCateId;
         const room = new Room(data);
         room.save()
             .then((room) => {
                 console.log('Post room created successfully');
-                res.status(200).json({ message: 'Room created successfully' });
+                if (childIds && childIds.length > 0) {
+                    return Category.updateMany(
+                        { 'child._id': { $in: childIds } },
+                        { $push: { 'child.$.roomId': room._id } }
+                    );
+                }
+            })
+            .then(() => {
+                res.status(200).json({
+                    message: 'Room created and categories updated successfully',
+                });
             })
             .catch((error) => {
                 console.log('Room created error:', error);
@@ -135,6 +147,19 @@ class RoomController {
             })
             .catch((error) => {
                 console.log('Get all rooms error: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    update(req, res) {
+        const roomId = req.params.roomId;
+        const data = req.body.data;
+        Room.findByIdAndUpdate(roomId, data)
+            .then((room) => {
+                if (!room) res.status(404).json({ message: 'Room not found' });
+                res.status(200).json({ message: 'Updated room successfully' });
+            })
+            .catch((error) => {
+                console.log('Update room error: ', error);
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
