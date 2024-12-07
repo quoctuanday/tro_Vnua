@@ -102,14 +102,12 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     <p>Địa chỉ: {roomDetail.location.name}</p>
                 </div>
 
-                {/* Room Introduction */}
                 <div className="my-6">
                     <h2 className="text-xl font-semibold text-gray-800">Giới thiệu về phòng</h2>
                     <p className="text-lg mb-4 text-gray-700">{roomDetail.description}</p>
                 </div>
             </div>
 
-            {/* Owner Information - Positioned outside the main content, aligned on the right */}
             <div className="w-full lg:w-1/3 bg-gray-50 p-4 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
                 <h2 className="text-xl font-semibold text-gray-800">Thông tin chủ sở hữu</h2>
                 <p><strong>Chủ sở hữu:</strong> {roomDetail.ownerName}</p>
