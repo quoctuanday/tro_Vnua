@@ -113,6 +113,8 @@ export const getDeletedNews = () => api.get('news/getDeletedNews');
 export const restoreNews = (newsId) => api.patch(`/news/restore/${newsId}`);
 export const forceDeletedNews = (newsId) =>
     api.delete(`/news/forceDelete/${newsId}`);
+//All News
+export const getAllNews = () => api.get('/news/getAllNews');
 
 //Map
 export const getProvince = () => api_map.get('/p/');
@@ -124,3 +126,7 @@ export const getCategory = () => api.get('/category/get');
 export const updateCategory = (id, data) =>
     api.put(`/category/update/${id}`, { data });
 export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
+
+//Comment
+export const createComment = (data) => api.post('/comments/create', { data });
+export const getComment = () => api.get('/comments/get');

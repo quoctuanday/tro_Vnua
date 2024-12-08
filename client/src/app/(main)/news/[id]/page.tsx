@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getNewsPersonal } from '@/api/api';
+import { getAllNews } from '@/api/api';
 import { News } from '@/schema/news';
 import dateConvert from '@/utils/convertDate';
 import React from 'react';
+import Image from 'next/image';
 
 function NewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [newsDetail, setNewsDetail] = useState<News | null>(null);
@@ -19,17 +20,20 @@ function NewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
         const getDetailData = async () => {
             try {
                 setLoading(true);
-                const response = await getNewsPersonal();
+                const response = await getAllNews();
                 if (response && response.data) {
-                    const newsItem = response.data.news.find((item: News) => item._id === id);
+                    const newsItem = response.data.news.find(
+                        (item: News) => item._id === id
+                    );
                     if (newsItem) {
                         setNewsDetail(newsItem);
                     } else {
-                        setError("Tin tức không tìm thấy.");
+                        setError('Tin tức không tìm thấy.');
                     }
                 }
             } catch (error) {
-                setError("Lỗi khi tải tin tức.");
+                console.log(error);
+                setError('Lỗi khi tải tin tức.');
             } finally {
                 setLoading(false);
             }
@@ -55,20 +59,24 @@ function NewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
 
     return (
         <div className="p-[1.3rem] roboto-regular">
-            <h1 className="text-[1.5rem] roboto-bold mb-4">{newsDetail.title}</h1>
+            <h1 className="text-[1.5rem] roboto-bold mb-4">
+                {newsDetail.title}
+            </h1>
             <div className="text-sm text-rootColor mb-4">
                 Ngày đăng: {dateConvert(newsDetail.createdAt)}
             </div>
             <div className="mb-4">
-                <img 
-                    src={newsDetail.image} 
-                    alt={newsDetail.title} 
+                <Image
+                    src={newsDetail.image}
+                    alt={newsDetail.title}
+                    width={100}
+                    height={100}
                     className="w-full h-auto rounded-[10px] mb-4"
                 />
             </div>
-            <div 
-                className="prose" 
-                dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
+            <div
+                className="prose"
+                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
         </div>
     );

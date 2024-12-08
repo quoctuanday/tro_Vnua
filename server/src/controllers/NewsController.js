@@ -95,5 +95,16 @@ class NewsController {
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
+    getAllNews(req, res) {
+        News.find()
+            .then((news) => {
+                if (!news) res.status(404).json({ message: 'News not found' });
+                res.status(200).json({ message: 'List News', news });
+            })
+            .catch((error) => {
+                console.log('error get all news: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
 }
 module.exports = new NewsController();

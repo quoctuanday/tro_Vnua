@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const roomSocket = require('./UserSocket');
 const userSocket = require('./RoomSocket');
 const categorySocket = require('./CategorySocket');
+const commentSocket = require('./CommentSocket');
 const { CLIENT_PORT } = require('../env');
 
 const { Server } = require('socket.io');
@@ -23,6 +24,7 @@ function configureWebSocket(server) {
     roomSocket(io);
     userSocket(io);
     newsSocket(io);
+    commentSocket(io);
 
     io.on('connection', (socket) => {
         console.log('A user connected');

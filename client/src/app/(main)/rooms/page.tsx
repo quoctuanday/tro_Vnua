@@ -1,8 +1,13 @@
 'use client';
-import { getRoomsPersonal } from '@/api/api';
+import { getAllRooms } from '@/api/api';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
-import { FaCamera, FaSortAmountDown, FaSortAmountDownAlt, FaSpinner } from 'react-icons/fa';
+import {
+    FaCamera,
+    FaSortAmountDown,
+    FaSortAmountDownAlt,
+    FaSpinner,
+} from 'react-icons/fa';
 import Link from 'next/link';
 
 import { Room } from '@/schema/room';
@@ -10,7 +15,9 @@ import { Room } from '@/schema/room';
 function ListRoomPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [reverseSort, setReverseSort] = useState(false);
-    const [sortCriterion, setSortCriterion] = useState<'name' | 'date' | 'price'>('date');
+    const [sortCriterion, setSortCriterion] = useState<
+        'name' | 'date' | 'price'
+    >('date');
     const [loading, setLoading] = useState(true);
 
     const [isClient, setIsClient] = useState(false);
@@ -19,11 +26,16 @@ function ListRoomPage() {
         setIsClient(true);
 
         const getData = async () => {
-            const response = await getRoomsPersonal();
+            const response = await getAllRooms();
             if (response) {
-                setRooms(response.data.rooms);
+                const data = response.data.formattedRooms;
+                const availableRooms = data.filter(
+                    (room: Room) => room.isAvailable
+                );
+
+                setRooms(availableRooms);
             }
-            setLoading(false); 
+            setLoading(false);
         };
         getData();
     }, []);
@@ -77,7 +89,9 @@ function ListRoomPage() {
                     name=""
                     id=""
                     onChange={(e) =>
-                        setSortCriterion(e.target.value as 'name' | 'date' | 'price')
+                        setSortCriterion(
+                            e.target.value as 'name' | 'date' | 'price'
+                        )
                     }
                     className="rounded border-2 outline-none px-2 py-1"
                 >
@@ -126,21 +140,34 @@ function ListRoomPage() {
                                         />
                                         <div className="absolute px-1 py-1 bg-[#333] opacity-40 bottom-[5%] left-[0.6rem] text-white flex items-center justify-center rounded min-w-[1.5rem] h-[1.2rem]">
                                             <FaCamera />
-                                            <p className="ml-2">{Array.isArray(room.images) ? room.images.length : 1}</p>
+                                            <p className="ml-2">
+                                                {Array.isArray(room.images)
+                                                    ? room.images.length
+                                                    : 1}
+                                            </p>
                                         </div>
                                         <div className="ml-2 flex flex-col justify-between max-w-[26.8rem] h-full">
                                             <div className="roboto-bold max-w-[26.8rem] max_line_1 ">
                                                 {room.title}
                                             </div>
-                                            <div className="max_line_2 ">{room.description}</div>
+                                            <div className="max_line_2 ">
+                                                {room.description}
+                                            </div>
                                             <div className="flex items-center text-rootColor">
                                                 <div className="roboto-bold">
-                                                    {formatCurrency(room.price)} /tháng
+                                                    {formatCurrency(room.price)}{' '}
+                                                    /tháng
                                                 </div>
-                                                <div className="ml-2 max_line_1 ">{room.location.name}</div>
+                                                <div className="ml-2 max_line_1 ">
+                                                    {room.location.name}
+                                                </div>
                                                 <div className="ml-2 text-[0.9rem]">
                                                     {isClient && room.createdAt
-                                                        ? new Date(room.createdAt).toLocaleDateString('vi-VN')
+                                                        ? new Date(
+                                                              room.createdAt
+                                                          ).toLocaleDateString(
+                                                              'vi-VN'
+                                                          )
                                                         : 'Đang tải'}
                                                 </div>
                                             </div>

@@ -1,11 +1,11 @@
 'use client';
-import { getNewsPersonal } from '@/api/api'; 
-import { News } from '@/schema/news'; 
+import { getAllNews } from '@/api/api';
+import { News } from '@/schema/news';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FaSortAmountDown, FaSortAmountDownAlt } from 'react-icons/fa';
-import dateConvert from '@/utils/convertDate'; 
-import Link from 'next/link'; 
+import dateConvert from '@/utils/convertDate';
+import Link from 'next/link';
 
 function NewsPage() {
     const [news, setNews] = useState<News[]>([]);
@@ -14,7 +14,7 @@ function NewsPage() {
 
     useEffect(() => {
         const getData = async () => {
-            const response = await getNewsPersonal();
+            const response = await getAllNews();
             if (response && response.data) {
                 setNews(response.data.news);
             }
@@ -30,7 +30,7 @@ function NewsPage() {
                     return a.title.localeCompare(b.title);
                 case 'date':
                     return (
-                        new Date(b.createdAt ?? 0).getTime() - 
+                        new Date(b.createdAt ?? 0).getTime() -
                         new Date(a.createdAt ?? 0).getTime()
                     );
                 default:
@@ -86,14 +86,21 @@ function NewsPage() {
                             />
                             <div className="ml-4 flex flex-col flex-grow">
                                 <h2 className="text-xl roboto-bold">
-                                    <Link href={`/news/${newsItem._id}`} passHref>
+                                    <Link
+                                        href={`/news/${newsItem._id}`}
+                                        passHref
+                                    >
                                         {newsItem.title}
                                     </Link>
                                 </h2>
-                                <p className="text-sm text-gray-500"
-                                   dangerouslySetInnerHTML={{
-                                        __html: newsItem.content.substring(0, 100) + '...'
-                                    }} />
+                                <p
+                                    className="text-sm text-gray-500"
+                                    dangerouslySetInnerHTML={{
+                                        __html:
+                                            newsItem.content.substring(0, 100) +
+                                            '...',
+                                    }}
+                                />
                                 <div className="text-sm text-rootColor">
                                     Ngày đăng: {dateConvert(newsItem.createdAt)}
                                 </div>
