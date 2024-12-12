@@ -11,12 +11,7 @@ router.put(
     authorization(['admin', 'moderator']),
     roomController.update
 );
-router.get(
-    '/getAllRooms',
-    authenticateToken,
-    authorization(['admin', 'moderator']),
-    roomController.getAllRooms
-);
+router.get('/getAllRooms', authenticateToken, roomController.getAllRooms);
 //For personal user
 router.put(
     '/updateRoomPersonal',

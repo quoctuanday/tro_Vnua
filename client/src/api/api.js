@@ -129,4 +129,4 @@ export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
 
 //Comment
 export const createComment = (data) => api.post('/comments/create', { data });
-export const getComment = () => api.get('/comments/get');
+export const getComment = (id) => api.get(`/comments/get/${id}`);

@@ -18,6 +18,7 @@ export type Room = {
     urlSaveImages: string;
     price: number;
     acreage: number;
+    rate: number;
     isAvailable: boolean;
     createdAt?: string;
     updatedAt?: string;

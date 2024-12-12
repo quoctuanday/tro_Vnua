@@ -10,8 +10,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import { storage } from '@/firebase/config';
-import { updateRoomPersonal } from '@/api/api';
+import { getCategory, updateRoomPersonal } from '@/api/api';
 import { Room } from '@/schema/room';
+import { Category } from '@/schema/Category';
 
 //type
 interface PostRoomProps {
@@ -27,12 +28,12 @@ type Coordinates = {
 const EditRoom: React.FC<PostRoomProps> = ({
     rooms,
     roomIndex,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setEditForm,
 }) => {
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues, setValue } = useForm();
-    // const [typeRoom, setTypeRoom] = useState<number | null>(null);
+    const [category, setCategory] = useState<Category[]>([]);
+    const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
     const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
@@ -41,25 +42,42 @@ const EditRoom: React.FC<PostRoomProps> = ({
     const [error, setError] = useState();
     const [urlSaveImages, setUrlSaveImages] = useState('');
 
-    // const handleClickType = (index: number) => {
-    //     setTypeRoom(typeRoom === index ? null : index);
-    // };
-
     useEffect(() => {
-        //Set value hook form
-        setValue('_id', rooms[roomIndex]._id);
-        setValue('title', rooms[roomIndex].title);
-        setValue('description', rooms[roomIndex].description);
-        setValue('userId', rooms[roomIndex].userId);
-        setValue('ownerName', rooms[roomIndex].ownerName);
-        setValue('contactNumber', rooms[roomIndex].contactNumber);
-        setValue('contactEmail', rooms[roomIndex].contactEmail);
-        setValue('location', rooms[roomIndex].location.name);
-        setValue('price', rooms[roomIndex].price);
-        setValue('acreage', rooms[roomIndex].acreage);
+        const room = rooms[roomIndex];
+        console.log(room);
+        const getCategories = async () => {
+            const response = await getCategory();
+            if (response) {
+                const data = response.data.category;
+                setCategory(data);
+                const matchedChildIds: string[] = [];
+                data.forEach((category: Category) => {
+                    category.child.forEach((child) => {
+                        if (child.roomId?.includes(room._id)) {
+                            matchedChildIds.push(child._id);
+                        }
+                    });
+                });
+                console.log(matchedChildIds);
+                setChildCateId(matchedChildIds);
+            }
+        };
+        getCategories();
 
-        setUrlSaveImages(rooms[roomIndex].urlSaveImages);
-        const urls = rooms[roomIndex].images;
+        //Set value hook form
+        setValue('_id', room._id);
+        setValue('title', room.title);
+        setValue('description', room.description);
+        setValue('userId', room.userId);
+        setValue('ownerName', room.ownerName);
+        setValue('contactNumber', room.contactNumber);
+        setValue('contactEmail', room.contactEmail);
+        setValue('price', room.price);
+        setValue('acreage', room.acreage);
+        setValue('location', room.location.name);
+
+        setUrlSaveImages(room.urlSaveImages);
+        const urls = room.images;
 
         if (Array.isArray(urls)) {
             setChangeImage(urls);
@@ -69,6 +87,17 @@ const EditRoom: React.FC<PostRoomProps> = ({
             setChangeImage([urls]);
         }
     }, [setValue, rooms, roomIndex]);
+
+    const addRoomIntoCategory = (id: string) => {
+        setChildCateId((prev) => {
+            if (prev.includes(id)) {
+                return prev.filter((childId) => childId !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+        console.log(childCateId);
+    };
 
     //Set image
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +185,9 @@ const EditRoom: React.FC<PostRoomProps> = ({
             const response = await updateRoomPersonal({
                 data,
                 userId,
+                childCateId,
                 uploadURL,
+                coords,
             });
             if (response) {
                 toast.success('Chỉnh sửa thông tin thành công!');
@@ -239,37 +270,52 @@ const EditRoom: React.FC<PostRoomProps> = ({
                                 />
                             </div>
                         </div>
-                        {/* <div className="mt-3 ">
-                            <div className="roboto-bold">Loại phòng: </div>
-                            <div className=" grid grid-cols-5 gap-2 mt-1">
-                                <div className="col-span-1 ">
-                                    <input
-                                        type="radio"
-                                        checked={typeRoom === 1}
-                                        onChange={() => setTypeRoom(1)}
-                                        className="hidden"
-                                    />
-
-                                    <label
-                                        className={`cursor-pointer mt-1  ${
-                                            typeRoom === 1
-                                                ? 'bg-rootColor text-white'
-                                                : 'bg-white border-2'
-                                        } rounded-[10px] py-1 px-2`}
-                                        onClick={() => handleClickType(1)}
-                                        style={{ userSelect: 'none' }}
-                                    >
-                                        Phòng đơn
-                                    </label>
+                        <div className="mt-3 ">
+                            {category.length > 0 && (
+                                <div className="">
+                                    <h1 className="roboto-bold">Danh mục:</h1>
+                                    {category.map((category) => (
+                                        <div
+                                            className="flex items-center mt-2"
+                                            key={category._id}
+                                        >
+                                            <h1>{category.name}:</h1>
+                                            {category.child.map((child) => (
+                                                <div
+                                                    className="ml-2"
+                                                    key={child._id}
+                                                >
+                                                    <div
+                                                        onClick={() =>
+                                                            addRoomIntoCategory(
+                                                                child._id
+                                                            )
+                                                        }
+                                                        className={`px-2 cursor-pointer rounded-[10px] py-1 border-[1px] transition-colors duration-300
+                                                            ${
+                                                                childCateId.includes(
+                                                                    child._id
+                                                                )
+                                                                    ? 'bg-rootColor text-white'
+                                                                    : ''
+                                                            }
+                                                            `}
+                                                    >
+                                                        {child.name}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        </div> */}
+                            )}
+                        </div>
                         <div className="mt-3">
                             <div className="roboto-bold">Mô tả:</div>
                             <textarea
                                 {...register('description', { required: true })}
                                 name="description"
-                                className="min-h-[10rem] w-full mt-1 border-2 outline-none rounded"
+                                className="min-h-[10rem] w-full whi mt-1 border-2 outline-none rounded"
                             ></textarea>
                         </div>
                         <div className="mt-3 flex items-center">

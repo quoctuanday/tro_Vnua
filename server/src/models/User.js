@@ -17,6 +17,7 @@ const User = new Schema(
             default: 'user',
             required: true,
         },
+        rate: { type: Number, default: 0 },
         isBlocked: { type: Boolean, default: false },
     },
     { timestamps: true }

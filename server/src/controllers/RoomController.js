@@ -64,7 +64,50 @@ class RoomController {
         const data = req.body.data.data;
         data.userId = req.body.data.userId;
         data.images = req.body.data.uploadURL;
+        const location = data.location;
+        delete data.location;
+        data.location = {
+            name: location,
+            coordinates: req.body.data.coords,
+        };
+        const childIds = req.body.data.childCateId;
+        const roomId = data._id;
         Room.findByIdAndUpdate(data._id, data)
+            .then(() => {
+                //Tìm child categories có chứa roomId
+                return Category.find({ 'child.roomId': roomId });
+            })
+            .then((categories) => {
+                const updatePromises = [];
+
+                categories.forEach((category) => {
+                    category.child.forEach((child) => {
+                        if (child.roomId.includes(roomId)) {
+                            if (!childIds.includes(child._id.toString())) {
+                                // Nếu childId không có trong danh sách mới, xóa roomId
+                                child.roomId = child.roomId.filter(
+                                    (id) => id.toString() !== roomId.toString()
+                                );
+                            }
+                        }
+                    });
+                    updatePromises.push(category.save());
+                });
+
+                // Thêm roomId vào childId mới nếu chưa tồn tại
+                childIds.forEach((childId) => {
+                    updatePromises.push(
+                        Category.findOneAndUpdate(
+                            { 'child._id': childId },
+                            {
+                                $addToSet: { 'child.$.roomId': roomId },
+                            }
+                        )
+                    );
+                });
+
+                return Promise.all(updatePromises);
+            })
             .then(() => {
                 res.status(200).json({ message: 'Room updated successfully' });
             })

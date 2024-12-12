@@ -300,35 +300,44 @@ function ManageCategoryPage() {
                                                             </div>
                                                         </li>
                                                         {category.child.map(
-                                                            (child, index) => (
-                                                                <li
-                                                                    key={index}
-                                                                    className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px]"
-                                                                >
-                                                                    <div
-                                                                        className={`relative top-[1.1em] bg-white px-2 py-1 rounded-l flex items-center justify-between`}
+                                                            (child, index) => {
+                                                                const updatedChildName =
+                                                                    child.name.replace(
+                                                                        /m2/g,
+                                                                        'm²'
+                                                                    );
+                                                                return (
+                                                                    <li
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="pl-[1em] border-dotted border-black border-l-[1px] border-b-[1px]"
                                                                     >
-                                                                        <span>
-                                                                            {
-                                                                                child.name
-                                                                            }
-                                                                        </span>
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setCategoryIdDeleted(
-                                                                                    category._id
-                                                                                );
-                                                                                setChildDeleted(
-                                                                                    index
-                                                                                );
-                                                                            }}
-                                                                            className="hover:text-red-400"
+                                                                        <div
+                                                                            className={`relative top-[1.1em] bg-white px-2 py-1 rounded-l flex items-center justify-between`}
                                                                         >
-                                                                            <IoTrashBin />
-                                                                        </button>
-                                                                    </div>
-                                                                </li>
-                                                            )
+                                                                            <span>
+                                                                                {
+                                                                                    updatedChildName
+                                                                                }
+                                                                            </span>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setCategoryIdDeleted(
+                                                                                        category._id
+                                                                                    );
+                                                                                    setChildDeleted(
+                                                                                        index
+                                                                                    );
+                                                                                }}
+                                                                                className="hover:text-red-400"
+                                                                            >
+                                                                                <IoTrashBin />
+                                                                            </button>
+                                                                        </div>
+                                                                    </li>
+                                                                );
+                                                            }
                                                         )}
                                                     </div>
                                                 )}

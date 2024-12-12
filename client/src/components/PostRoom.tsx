@@ -49,12 +49,23 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     }, []);
 
     //add categories
-    const addRoomIntoCategory = (id: string) => {
+    const addRoomIntoCategory = (id: string, categoryId: string) => {
         setChildCateId((prev) => {
+            const filteredIds = prev.filter((id) => {
+                // Tìm danh mục chứa child này
+                const categoryContainsChild = category.some((cat) =>
+                    cat.child.some(
+                        (child) => child._id === id && cat._id !== categoryId
+                    )
+                );
+                return categoryContainsChild;
+            });
+
+            // Nếu đã chọn child này, bỏ chọn nó; nếu chưa, thêm nó vào
             if (prev.includes(id)) {
-                return prev.filter((childId) => childId !== id);
+                return filteredIds;
             } else {
-                return [...prev, id];
+                return [...filteredIds, id];
             }
         });
         console.log(childCateId);
@@ -250,7 +261,8 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                                     <button
                                                         onClick={() =>
                                                             addRoomIntoCategory(
-                                                                child._id
+                                                                child._id,
+                                                                category._id
                                                             )
                                                         }
                                                         className={`px-2 rounded-[10px] py-1 border-[1px] transition-colors duration-300

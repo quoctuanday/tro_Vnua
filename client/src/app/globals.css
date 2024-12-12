@@ -31,7 +31,6 @@
         overflow: hidden;
         display: block;
         display: -webkit-box;
-        /* Dòng trên ko áp dụng thì nó sẽ áp dụng dòng trên nữa */
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
     }

@@ -1,114 +1,83 @@
 'use client';
 import { getAllNews } from '@/api/api';
+import Pagination from '@/components/pagination';
 import { News } from '@/schema/news';
-import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
-import { FaSortAmountDown, FaSortAmountDownAlt } from 'react-icons/fa';
+import { useUser } from '@/store/userData';
 import dateConvert from '@/utils/convertDate';
+import Image from 'next/image';
 import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 
 function NewsPage() {
+    const { socket } = useUser();
     const [news, setNews] = useState<News[]>([]);
-    const [sortCriterion, setSortCriterion] = useState<'name' | 'date'>('date');
-    const [reverseSort, setReverseSort] = useState(false);
+    const [filterNews, setFilterNews] = useState<News[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        const getData = async () => {
+        const getNews = async () => {
             const response = await getAllNews();
-            if (response && response.data) {
-                setNews(response.data.news);
+            if (response) {
+                const data = response.data.news;
+                setNews(data);
+                setFilterNews(data);
             }
         };
-        getData();
-    }, []);
-
-    // Sắp xếp tin tức
-    const getSortedNews = () => {
-        const sorted = [...news].sort((a, b) => {
-            switch (sortCriterion) {
-                case 'name':
-                    return a.title.localeCompare(b.title);
-                case 'date':
-                    return (
-                        new Date(b.createdAt ?? 0).getTime() -
-                        new Date(a.createdAt ?? 0).getTime()
-                    );
-                default:
-                    return 0;
-            }
-        });
-
-        if (reverseSort) {
-            return sorted.reverse();
+        getNews();
+        if (socket) {
+            socket.on('news-update', () => {
+                getNews();
+            });
         }
-        return sorted;
-    };
-
-    const sortedNews = getSortedNews();
-
+    }, [socket]);
+    const newsPerPage = 9;
+    const totalNews = filterNews.length;
+    const totalPages = Math.ceil(totalNews / newsPerPage);
+    const startIndex = (currentPage - 1) * newsPerPage;
+    const endIndex = startIndex + newsPerPage;
+    const currentNews = filterNews.slice(startIndex, endIndex);
     return (
-        <div className="p-[1.3rem] roboto-regular">
-            <h1 className="text-[1.5rem] roboto-bold mb-4">Tin tức</h1>
-
-            <div className="mt-1 flex items-center justify-end">
-                <select
-                    onChange={(e) =>
-                        setSortCriterion(e.target.value as 'name' | 'date')
-                    }
-                    className="rounded border-2 outline-none px-2 py-1"
-                >
-                    <option value="date">Sắp xếp theo ngày đăng</option>
-                    <option value="name">Sắp xếp theo tên</option>
-                </select>
-                {reverseSort ? (
-                    <FaSortAmountDown
-                        className="ml-2 hover:text-rootColor cursor-pointer"
-                        onClick={() => setReverseSort(false)}
-                    />
+        <div>
+            <h1 className="roboto-bold text-[1.3rem] pt-3">Tin tức</h1>
+            <div className="grid grid-cols-3 mt-3 gap-x-6 gap-y-12">
+                {currentNews ? (
+                    currentNews.map((news) => (
+                        <Link
+                            href={`/news/${news._id}`}
+                            className="grid shadow-custom-light grid-rows-2 col-span-1 h-[22rem] w-full  rounded"
+                            key={news._id}
+                        >
+                            <div className="row-span-1 rounded-t  overflow-hidden">
+                                <Image
+                                    src={news.image}
+                                    alt="ảnh tin tức"
+                                    width={200}
+                                    height={200}
+                                    loading="lazy"
+                                    className="w-full h-full"
+                                ></Image>
+                            </div>
+                            <div className="row-span-1 rounded-b bg-white ml-3 ">
+                                <p className=" mt-3 roboto-thin">Tin tức</p>
+                                <h2 className=" roboto-bold text-[1.3rem] ">
+                                    {news.title}
+                                </h2>
+                                <p>Ngày đăng: {dateConvert(news.createdAt)}</p>
+                            </div>
+                        </Link>
+                    ))
                 ) : (
-                    <FaSortAmountDownAlt
-                        className="ml-2 hover:text-rootColor cursor-pointer"
-                        onClick={() => setReverseSort(true)}
-                    />
+                    <div className="flex items-center justify-center text-black spin">
+                        <FaSpinner />
+                    </div>
                 )}
             </div>
-
-            <div className="mt-3">
-                {sortedNews.map((newsItem) => (
-                    <div className="mt-4" key={newsItem._id}>
-                        <div className="flex items-center">
-                            <Image
-                                src={newsItem.image}
-                                alt={newsItem.title}
-                                width={100}
-                                height={100}
-                                className="w-[6rem] h-[6rem] rounded-[10px] border-2"
-                            />
-                            <div className="ml-4 flex flex-col flex-grow">
-                                <h2 className="text-xl roboto-bold">
-                                    <Link
-                                        href={`/news/${newsItem._id}`}
-                                        passHref
-                                    >
-                                        {newsItem.title}
-                                    </Link>
-                                </h2>
-                                <p
-                                    className="text-sm text-gray-500"
-                                    dangerouslySetInnerHTML={{
-                                        __html:
-                                            newsItem.content.substring(0, 100) +
-                                            '...',
-                                    }}
-                                />
-                                <div className="text-sm text-rootColor">
-                                    Ngày đăng: {dateConvert(newsItem.createdAt)}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <Pagination
+                currentPage={currentPage}
+                totalPage={totalPages}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 }

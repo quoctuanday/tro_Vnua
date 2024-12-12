@@ -72,7 +72,9 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
         fetchRoomDetail();
 
         const getComments = async () => {
-            const response = await getComment();
+            const resolvedParams = await params;
+            const { id } = resolvedParams;
+            const response = await getComment(id);
             if (response) {
                 console.log(response.data.comment);
                 setComment(response.data.comment);

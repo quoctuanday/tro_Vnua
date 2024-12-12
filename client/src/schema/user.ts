@@ -6,6 +6,7 @@ export type User = {
     email: string;
     gender?: string;
     phoneNumber?: string;
+    rate?: number;
     DOB?: Date;
     role: 'admin' | 'moderator' | 'user';
     isBlocked: boolean;
