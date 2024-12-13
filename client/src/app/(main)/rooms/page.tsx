@@ -10,10 +10,15 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import Currency from '@/utils/convertCurrency';
 import Link from 'next/link';
 import dateConvert from '@/utils/convertDate';
+import Pagination from '@/components/pagination';
 
 function ListRoomPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [category, setCategory] = useState<Category[]>([]);
+    const [filterRooms, setFilterRooms] = useState<Room[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [listRoomId, setListRoomId] = useState<string[]>([]);
+    const [listChildCate, setListChildCate] = useState<string[]>([]);
     const [numberOfRoom, setNumberOfRoom] = useState(0);
     const [typeSort, setTypeSort] = useState<'Đề xuất' | 'Mới nhất'>('Đề xuất');
 
@@ -25,22 +30,31 @@ function ListRoomPage() {
                 const availableRooms = data.filter(
                     (room: Room) => room.isAvailable
                 );
+                availableRooms.sort((a: Room, b: Room) => b.rate - a.rate);
                 console.log(availableRooms.length);
                 setNumberOfRoom(availableRooms.length);
 
                 setRooms(availableRooms);
+                setFilterRooms(availableRooms);
             }
         };
         const getCategories = async () => {
             const response = await getCategory();
             if (response) {
                 const data = response.data.category;
-                setCategory(data);
+                setCategories(data);
             }
         };
         getRooms();
         getCategories();
     }, []);
+
+    const roomsPerPage = 5;
+    const totalRooms = filterRooms.length;
+    const totalPages = Math.ceil(totalRooms / roomsPerPage);
+    const startIndex = (currentPage - 1) * roomsPerPage;
+    const endIndex = startIndex + roomsPerPage;
+    const currentRooms = filterRooms.slice(startIndex, endIndex);
 
     return (
         <div className="pt-6">
@@ -65,7 +79,15 @@ function ListRoomPage() {
                     <div className="mt-3">
                         <div className="flex">
                             <button
-                                onClick={() => setTypeSort('Đề xuất')}
+                                onClick={() => {
+                                    setTypeSort('Đề xuất');
+                                    setFilterRooms(
+                                        rooms.sort(
+                                            (a: Room, b: Room) =>
+                                                b.rate - a.rate
+                                        )
+                                    );
+                                }}
                                 className={`${
                                     typeSort === 'Đề xuất' &&
                                     'roboto-bold border-b-[3px] border-black'
@@ -74,7 +96,20 @@ function ListRoomPage() {
                                 Đề xuất
                             </button>
                             <button
-                                onClick={() => setTypeSort('Mới nhất')}
+                                onClick={() => {
+                                    setTypeSort('Mới nhất');
+                                    setFilterRooms(
+                                        rooms.sort(
+                                            (a: Room, b: Room) =>
+                                                new Date(
+                                                    b.createdAt ?? 0
+                                                ).getTime() -
+                                                new Date(
+                                                    a.createdAt ?? 0
+                                                ).getTime()
+                                        )
+                                    );
+                                }}
                                 className={`ml-3 ${
                                     typeSort === 'Mới nhất' &&
                                     'roboto-bold border-b-[3px] border-black'
@@ -85,7 +120,7 @@ function ListRoomPage() {
                         </div>
                     </div>
                     <div className="mt-3">
-                        {rooms.map((room) => {
+                        {currentRooms.map((room) => {
                             const images = room.images.slice(0, 4);
                             return (
                                 <div
@@ -186,10 +221,15 @@ function ListRoomPage() {
                             );
                         })}
                     </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPage={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
                 <div className="col-span-1">
                     <div className="p-2 rounded  bg-white shadow-custom-light">
-                        {category.map((category) => (
+                        {categories.map((category) => (
                             <div className="first:mt-0 mt-3" key={category._id}>
                                 <h1 className="roboto-bold">{category.name}</h1>
                                 <div className="grid grid-cols-2">
@@ -199,8 +239,139 @@ function ListRoomPage() {
 
                                         return (
                                             <div
-                                                className="col-span-1 hover:text-rootColor cursor-pointer "
+                                                className={`col-span-1 hover:text-rootColor cursor-pointer ${
+                                                    listChildCate.includes(
+                                                        child._id
+                                                    )
+                                                        ? 'text-rootColor roboto-bold'
+                                                        : ''
+                                                }`}
                                                 key={child._id}
+                                                onClick={() => {
+                                                    setListChildCate((prev) => {
+                                                        let updatedList;
+                                                        if (
+                                                            prev.includes(
+                                                                child._id
+                                                            )
+                                                        ) {
+                                                            updatedList =
+                                                                prev.filter(
+                                                                    (id) =>
+                                                                        id !==
+                                                                        child._id
+                                                                );
+                                                        } else {
+                                                            updatedList = [
+                                                                ...prev,
+                                                                child._id,
+                                                            ];
+                                                        }
+
+                                                        if (
+                                                            updatedList.length ===
+                                                            0
+                                                        ) {
+                                                            setFilterRooms(
+                                                                rooms
+                                                            );
+                                                        }
+
+                                                        return updatedList;
+                                                    });
+                                                    if (
+                                                        !listChildCate.includes(
+                                                            child._id
+                                                        )
+                                                    ) {
+                                                        setListRoomId(
+                                                            (prev) => [
+                                                                ...prev,
+                                                                ...(child.roomId ||
+                                                                    []),
+                                                            ]
+                                                        );
+                                                        const newList = [
+                                                            ...listRoomId,
+                                                            ...(child.roomId ||
+                                                                []),
+                                                        ];
+
+                                                        const childSelect =
+                                                            Array.from(
+                                                                new Set(newList)
+                                                            );
+
+                                                        const selectRoom =
+                                                            rooms.filter(
+                                                                (room) =>
+                                                                    childSelect.includes(
+                                                                        room._id
+                                                                    )
+                                                            );
+                                                        setFilterRooms(
+                                                            selectRoom
+                                                        );
+                                                    } else {
+                                                        if (child.roomId) {
+                                                            const filteredChildCate =
+                                                                listChildCate.filter(
+                                                                    (
+                                                                        childCate
+                                                                    ) =>
+                                                                        childCate !==
+                                                                        child._id
+                                                                );
+                                                            const listChildCategory =
+                                                                categories
+                                                                    .map(
+                                                                        (
+                                                                            category
+                                                                        ) => ({
+                                                                            ...category,
+                                                                            child: category.child.filter(
+                                                                                (
+                                                                                    child
+                                                                                ) =>
+                                                                                    filteredChildCate.includes(
+                                                                                        child._id
+                                                                                    )
+                                                                            ),
+                                                                        })
+                                                                    )
+                                                                    .filter(
+                                                                        (
+                                                                            category
+                                                                        ) =>
+                                                                            category
+                                                                                .child
+                                                                                .length >
+                                                                            0
+                                                                    );
+                                                            const allRoomIds =
+                                                                listChildCategory.flatMap(
+                                                                    (
+                                                                        category
+                                                                    ) =>
+                                                                        category.child.flatMap(
+                                                                            (
+                                                                                child
+                                                                            ) =>
+                                                                                child.roomId ||
+                                                                                []
+                                                                        )
+                                                                );
+                                                            setFilterRooms(
+                                                                rooms.filter(
+                                                                    (room) =>
+                                                                        allRoomIds.includes(
+                                                                            room._id
+                                                                        )
+                                                                )
+                                                            );
+                                                        }
+                                                    }
+                                                }}
                                             >
                                                 <div className="flex items-center text-[1rem]">
                                                     <MdKeyboardArrowRight />
