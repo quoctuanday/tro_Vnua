@@ -1,5 +1,6 @@
 const Room = require('../models/Room');
 const Category = require('../models/Category');
+const FavouriteRoom = require('../models/FavouriteRoom');
 
 class RoomController {
     //For personal use only
@@ -203,6 +204,54 @@ class RoomController {
             })
             .catch((error) => {
                 console.log('Update room error: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+
+    getFavourites(req, res) {
+        const userId = req.user.userId;
+        FavouriteRoom.find({ userId: userId }).then((favouriteRooms) => {
+            if (!favouriteRooms)
+                res.status(404).json({ message: 'room favourite not found' });
+            const roomIds = favouriteRooms.map((favourite) => favourite.roomId);
+            res.status(200).json({ message: 'List room favourite', roomIds });
+        });
+    }
+
+    createFavourite(req, res) {
+        const userId = req.user.userId;
+        const roomId = req.params.roomId;
+        const data = {};
+        data.roomId = roomId;
+        data.userId = userId;
+        const favourite = new FavouriteRoom(data);
+        favourite
+            .save()
+            .then((favourite) => {
+                if (!favourite)
+                    res.status(400).json({
+                        message: 'Favourite do not created',
+                    });
+                res.status(200).json({
+                    message: 'Favourite created successfully',
+                });
+            })
+            .catch((error) => {
+                console.log('create favourite error: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    deleteFavourite(req, res) {
+        const userId = req.user.userId;
+        const roomId = req.params.roomId;
+        FavouriteRoom.deleteOne({ roomId: roomId, userId: userId })
+            .then(() => {
+                res.status(200).json({
+                    message: 'room favourite has been deleted ',
+                });
+            })
+            .catch((error) => {
+                console.log('error force delete: ', error);
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }

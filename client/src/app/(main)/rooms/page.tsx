@@ -1,8 +1,21 @@
 'use client';
-import { getAllRooms, getCategory } from '@/api/api';
+import {
+    addFavourite,
+    getAllRooms,
+    getCategory,
+    getFavourites,
+    removeFavourite,
+} from '@/api/api';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
-import { FaCamera, FaRegStar, FaStar, FaStarHalfAlt } from 'react-icons/fa';
+import {
+    FaCamera,
+    FaHeart,
+    FaRegHeart,
+    FaRegStar,
+    FaStar,
+    FaStarHalfAlt,
+} from 'react-icons/fa';
 import { Room } from '@/schema/room';
 import { IoSearch } from 'react-icons/io5';
 import { Category } from '@/schema/Category';
@@ -11,8 +24,10 @@ import Currency from '@/utils/convertCurrency';
 import Link from 'next/link';
 import dateConvert from '@/utils/convertDate';
 import Pagination from '@/components/pagination';
+import { useUser } from '@/store/userData';
 
 function ListRoomPage() {
+    const { socket } = useUser();
     const [rooms, setRooms] = useState<Room[]>([]);
     const [filterRooms, setFilterRooms] = useState<Room[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +36,7 @@ function ListRoomPage() {
     const [listChildCate, setListChildCate] = useState<string[]>([]);
     const [numberOfRoom, setNumberOfRoom] = useState(0);
     const [typeSort, setTypeSort] = useState<'Đề xuất' | 'Mới nhất'>('Đề xuất');
+    const [isFavourite, setIsFavourite] = useState<string[]>([]);
 
     useEffect(() => {
         const getRooms = async () => {
@@ -31,11 +47,18 @@ function ListRoomPage() {
                     (room: Room) => room.isAvailable
                 );
                 availableRooms.sort((a: Room, b: Room) => b.rate - a.rate);
-                console.log(availableRooms.length);
                 setNumberOfRoom(availableRooms.length);
 
                 setRooms(availableRooms);
                 setFilterRooms(availableRooms);
+            }
+        };
+        const getFavouriteRooms = async () => {
+            const response = await getFavourites();
+            if (response) {
+                const data = response.data.roomIds;
+                console.log(data);
+                setIsFavourite(data);
             }
         };
         const getCategories = async () => {
@@ -46,8 +69,28 @@ function ListRoomPage() {
             }
         };
         getRooms();
+        getFavouriteRooms();
         getCategories();
-    }, []);
+        if (!socket) return;
+        socket.on('roomFavourite-update', () => {
+            console.log('update favourite');
+            getFavouriteRooms();
+        });
+        socket.on('category-update', () => {
+            getCategories();
+        });
+        socket.on('room-update', () => {
+            getRooms();
+        });
+    }, [socket]);
+
+    const handleFavourite = async (roomId: string) => {
+        if (isFavourite.includes(roomId)) {
+            await removeFavourite(roomId);
+        } else {
+            await addFavourite(roomId);
+        }
+    };
 
     const roomsPerPage = 5;
     const totalRooms = filterRooms.length;
@@ -197,7 +240,7 @@ function ListRoomPage() {
                                                 }
                                             )}
                                         </div>
-                                        <div className="flex">
+                                        <div className="flex items-center">
                                             <span className="text-rootColor roboto-bold">
                                                 {Currency(room.price, 'vi-VN')}
                                                 /tháng
@@ -205,7 +248,31 @@ function ListRoomPage() {
                                             <span className="ml-2">
                                                 {room.acreage}m&sup2;{' '}
                                             </span>
+                                            {isFavourite.includes(room._id) ? (
+                                                <button
+                                                    onClick={() =>
+                                                        handleFavourite(
+                                                            room._id
+                                                        )
+                                                    }
+                                                    className="ml-2 text-red-500"
+                                                >
+                                                    <FaHeart />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() =>
+                                                        handleFavourite(
+                                                            room._id
+                                                        )
+                                                    }
+                                                    className="ml-2"
+                                                >
+                                                    <FaRegHeart />
+                                                </button>
+                                            )}
                                         </div>
+
                                         <p className="mt-1  line-clamp-2 w-full">
                                             {room.description}
                                         </p>

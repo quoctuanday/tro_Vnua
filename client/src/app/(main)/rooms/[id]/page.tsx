@@ -10,12 +10,17 @@ import { Controller, useForm } from 'react-hook-form';
 import { FaRegStar, FaStar } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
+import CustomerMap from '@/components/Map';
 
 interface Comment {
     roomId: string;
     content: string;
     rate: number;
 }
+type Coordinates = {
+    latitude: number;
+    longitude: number;
+} | null;
 
 function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { socket, userLoginData } = useUser();
@@ -24,6 +29,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { register, handleSubmit, control, reset } = useForm<Comment>();
     const [roomId, setRoomId] = useState('');
     const [roomDetail, setRoomDetail] = useState<Room | null>(null);
+    const [coord, setCoord] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -49,7 +55,6 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     const availableRooms = data.filter(
                         (room: Room) => room.isAvailable
                     );
-
                     const room = availableRooms.find(
                         (room: Room) => room._id === id
                     );
@@ -107,6 +112,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
 
     const closeImageModal = () => {
         setSelectedImage(null);
+        console.log(coord);
     };
 
     const onSubmit = async (data: Comment) => {
@@ -186,6 +192,11 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     <p>Diện tích: {roomDetail.acreage} m²</p>
                     <p>Địa chỉ: {roomDetail.location.name}</p>
                 </div>
+                <CustomerMap
+                    latitude={roomDetail.location.coordinates.latitude}
+                    longitude={roomDetail.location.coordinates.longitude}
+                    setCoord={setCoord}
+                />
 
                 <div className="my-6">
                     <h2 className="text-xl font-semibold text-gray-800">

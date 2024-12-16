@@ -5,6 +5,17 @@ const authenticateToken = require('../middleware/auth');
 const authorization = require('../middleware/author');
 
 //For all user
+router.get('/getFavourites', authenticateToken, roomController.getFavourites);
+router.delete(
+    '/deleteFavourite/:roomId',
+    authenticateToken,
+    roomController.deleteFavourite
+);
+router.post(
+    '/createFavourite/:roomId',
+    authenticateToken,
+    roomController.createFavourite
+);
 router.put(
     '/update/:roomId',
     authenticateToken,

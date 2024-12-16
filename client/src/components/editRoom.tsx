@@ -75,6 +75,10 @@ const EditRoom: React.FC<PostRoomProps> = ({
         setValue('price', room.price);
         setValue('acreage', room.acreage);
         setValue('location', room.location.name);
+        setCoords({
+            latitude: room.location.coordinates.latitude,
+            longitude: room.location.coordinates.longitude,
+        });
 
         setUrlSaveImages(room.urlSaveImages);
         const urls = room.images;
@@ -407,8 +411,8 @@ const EditRoom: React.FC<PostRoomProps> = ({
                             {coords && (
                                 <div className="w-full rounded h-[400px] mt-1 ">
                                     <CustomerMap
-                                        longitude={coords?.longitude}
-                                        latitude={coords?.latitude}
+                                        longitude={coords.longitude}
+                                        latitude={coords.latitude}
                                         setCoord={setCoords}
                                     />
                                 </div>

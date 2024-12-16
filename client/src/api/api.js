@@ -103,6 +103,16 @@ export const updateRoomPersonal = (data) =>
 export const getAllRooms = () => api.get('/rooms/getAllRooms');
 export const updateRoom = (id, data) =>
     api.put(`/rooms/update/${id}`, { data });
+export const addFavourite = (roomId) =>
+    api.post(`/rooms/createFavourite/${roomId}`);
+export const removeFavourite = (roomId) =>
+    api.delete(`/rooms/deleteFavourite/${roomId}`);
+export const getFavourites = () => api.get('/rooms/getFavourites');
+
+//Roommate
+export const createRoommate = (data) =>
+    api.post('/roommate/createRoommate', { data });
+export const getRoommatePersonal = () => api.get('/roommate/getPersonRoommate');
 
 //News personal
 export const createNews = (data) => api.post('/news/createNews', { data });
