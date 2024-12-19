@@ -4,7 +4,7 @@ import CustomerMap from '@/components/Map';
 import { useUser } from '@/store/userData';
 import getCoordinates from '@/utils/locationIntoCoordinates';
 import Image from 'next/image';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FiPlus } from 'react-icons/fi';
 import { IoClose, IoCloseCircleOutline } from 'react-icons/io5';
@@ -13,10 +13,14 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast, { Toaster } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
-import { createRoommate } from '@/api/api';
+import { createRoommate, updateRoommatePersonal } from '@/api/api';
+import { Roommate } from '@/schema/Roommate';
 
 interface PostFindMateProps {
     setFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    action: boolean;
+    roommates: Roommate[];
+    roommateIndex: number;
 }
 
 type Coordinates = {
@@ -24,15 +28,55 @@ type Coordinates = {
     longitude: number;
 } | null;
 
-const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
+const PostFindMate: React.FC<PostFindMateProps> = ({
+    setFormVisible,
+    action,
+    roommates,
+    roommateIndex,
+}) => {
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues, setValue, watch } = useForm();
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
+    const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
     const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
     const [error, setError] = useState();
     const [location, setLocation] = useState('');
+    const [urlSaveImages, setUrlSaveImages] = useState('');
+
+    useEffect(() => {
+        if (!action) {
+            const roommate = roommates[roommateIndex];
+            setValue('_id', roommate._id);
+            setValue('title', roommate.title);
+            setValue('convenience', roommate.convenience);
+            setValue('require', roommate.require);
+            setValue('userId', roommate.userId);
+            setValue('ownerName', roommate.ownerName);
+            setValue('contactNumber', roommate.contactNumber);
+            setValue('contactEmail', roommate.contactEmail);
+            setValue('price', roommate.price);
+            setValue('numberOfPeople', roommate.numberOfPeople);
+            setValue('acreage', roommate.acreage);
+            setValue('location', roommate.location.name);
+            setCoords({
+                latitude: roommate.location.coordinates.latitude,
+                longitude: roommate.location.coordinates.longitude,
+            });
+
+            setUrlSaveImages(roommate.urlSaveImages);
+            const urls = roommate.images;
+
+            if (Array.isArray(urls)) {
+                setChangeImage(urls);
+                setUploadImageURL(urls);
+            } else {
+                setUploadImageURL([urls]);
+                setChangeImage([urls]);
+            }
+        }
+    }, [action, setValue, roommateIndex, roommates]);
 
     //Set image
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +104,11 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
     };
 
     const handleRemoveImage = (index: number) => {
+        if (!action) {
+            setUploadImageURL((prevImages) =>
+                prevImages.filter((_, i) => i !== index)
+            );
+        }
         setChangeImage((prevImages) =>
             prevImages.filter((_, i) => i !== index)
         );
@@ -89,47 +138,90 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
             toast.error('Chưa chọn ảnh!');
             return;
         }
-        const randomFolderName = uuidv4();
-        const folderPath = `troVnua/${userLoginData?.userName}/roommate/${randomFolderName}`;
-        try {
-            const uploadImages = await Promise.all(
-                files.map(async (file) => {
-                    const storageRef = ref(
-                        storage,
-                        `${folderPath}/${file.name}`
-                    );
+        if (action) {
+            const randomFolderName = uuidv4();
+            const folderPath = `troVnua/${userLoginData?.userName}/roommate/${randomFolderName}`;
+            try {
+                const uploadImages = await Promise.all(
+                    files.map(async (file) => {
+                        const storageRef = ref(
+                            storage,
+                            `${folderPath}/${file.name}`
+                        );
 
-                    try {
-                        await uploadBytes(storageRef, file);
-                        const url = await getDownloadURL(storageRef);
-                        return url;
-                    } catch (error) {
-                        console.log('Lỗi upload ảnh:', error);
-                        return null;
-                    }
-                })
-            );
+                        try {
+                            await uploadBytes(storageRef, file);
+                            const url = await getDownloadURL(storageRef);
+                            return url;
+                        } catch (error) {
+                            console.log('Lỗi upload ảnh:', error);
+                            return null;
+                        }
+                    })
+                );
 
-            const successfulUploads = uploadImages.filter(
-                (result) => result !== null
-            );
-            console.log(successfulUploads);
-            const userId = userLoginData?._id;
+                const successfulUploads = uploadImages.filter(
+                    (result) => result !== null
+                );
+                console.log(successfulUploads);
+                const userId = userLoginData?._id;
 
-            console.log(data);
-            const response = await createRoommate({
-                data,
-                userId,
-                folderPath,
-                successfulUploads,
-                coords,
-            });
-            if (response) {
-                toast.success('Đăng tin thành công!');
-                setFormVisible(false);
+                console.log(data);
+                const response = await createRoommate({
+                    data,
+                    userId,
+                    folderPath,
+                    successfulUploads,
+                    coords,
+                });
+                if (response) {
+                    toast.success('Đăng tin thành công!');
+                    setFormVisible(false);
+                }
+            } catch (error) {
+                console.error('Có lỗi xảy ra trong quá trình upload:', error);
             }
-        } catch (error) {
-            console.error('Có lỗi xảy ra trong quá trình upload:', error);
+        } else {
+            try {
+                //Upload images
+                const uploadImages = await Promise.all(
+                    files.map(async (file) => {
+                        const storageRef = ref(
+                            storage,
+                            `${urlSaveImages}/${file.name}`
+                        );
+
+                        try {
+                            await uploadBytes(storageRef, file);
+                            const url = await getDownloadURL(storageRef);
+                            return url;
+                        } catch (error) {
+                            console.log('Lỗi upload ảnh:', error);
+                            return null;
+                        }
+                    })
+                );
+
+                const successfulUploads = uploadImages.filter(
+                    (result) => result !== null
+                );
+                const uploadURL = [...uploadImageURL, ...successfulUploads];
+
+                const userId = userLoginData?._id;
+
+                const response = await updateRoommatePersonal({
+                    data,
+                    userId,
+                    uploadURL,
+                    coords,
+                });
+                if (response) {
+                    toast.success('Chỉnh sửa thông tin thành công!');
+                    setFormVisible(false);
+                }
+            } catch (error) {
+                console.error('Có lỗi xảy ra trong quá trình upload:', error);
+            }
         }
     };
     return (
@@ -181,7 +273,9 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
                     </div>
                     <div className="grid grid-cols-2 gap-2 mt-3">
                         <div className="col-span-1  grid grid-cols-4 gap-1">
-                            <label className="roboto-bold">SDT liên hệ: </label>
+                            <label className="roboto-bold flex items-center">
+                                SDT liên hệ:{' '}
+                            </label>
                             <input
                                 type="text"
                                 {...register('contactNumber', {
@@ -192,7 +286,7 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
                             />
                         </div>
                         <div className="col-span-1 grid grid-cols-4 gap-1">
-                            <label className="roboto-bold col-span-1 ">
+                            <label className="roboto-bold col-span-1 flex items-center ">
                                 Email liên hệ:{' '}
                             </label>
                             <input
@@ -328,8 +422,12 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
                     </div>
                     <div className="mt-3 roboto-bold">
                         <h1 className="roboto-bold">Vị trí: </h1>
-                        <LocationInput setLocation={setLocation} />
-                        <h1 className="mt-2 ">Ngõ đường:</h1>
+                        {action && (
+                            <div>
+                                <LocationInput setLocation={setLocation} />
+                                <h1 className="mt-2 ">Ngõ đường:</h1>
+                            </div>
+                        )}
                         <div className="w-full grid grid-cols-5 gap-3">
                             <div className="w-full col-span-4">
                                 <input
@@ -367,7 +465,7 @@ const PostFindMate: React.FC<PostFindMateProps> = ({ setFormVisible }) => {
                         type="submit"
                         className="px-2 py-1 rounded-[10px] bg-rootColor hover:bg-[#699ba3] text-white mt-3"
                     >
-                        Đăng tin
+                        {action ? 'Đăng tin' : 'Chỉnh sửa'}
                     </button>
                 </form>
             </div>

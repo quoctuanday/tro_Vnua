@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const roomSocket = require('./UserSocket');
+const roommateSocket = require('./RoommateSocket');
 const userSocket = require('./RoomSocket');
 const categorySocket = require('./CategorySocket');
 const commentSocket = require('./CommentSocket');
@@ -24,6 +25,7 @@ function configureWebSocket(server) {
     favouriteRoomsSocket(io);
     categorySocket(io);
     roomSocket(io);
+    roommateSocket(io);
     userSocket(io);
     newsSocket(io);
     commentSocket(io);

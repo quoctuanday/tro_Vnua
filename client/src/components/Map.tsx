@@ -69,7 +69,7 @@ const CustomerMap: React.FC<Props> = ({ latitude, longitude, setCoord }) => {
     return (
         <MapContainer
             center={[latitude, longitude]}
-            zoom={13}
+            zoom={30}
             doubleClickZoom={true}
             scrollWheelZoom={true}
             dragging={true}

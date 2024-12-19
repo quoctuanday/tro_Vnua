@@ -34,6 +34,24 @@
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
     }
+    /* Box  start from top-right */
+    .box-open {
+        transform-origin: calc(100% - 32px) top;
+        animation: boxOpen ease-in 0.2s;
+        will-change: opacity, transform;
+        z-index: 3;
+    }
+    @keyframes boxOpen {
+        from {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
 }
 
 @layer utilities {

@@ -77,7 +77,20 @@ function SidebarAdmin() {
                         }}
                     >
                         <LuFile className="pr-1" />
-                        Quản lí bài đăng
+                        Quản lí bài đăng cho thuê phòng
+                    </Link>
+                    <Link
+                        href={'/admin/manageRoommate'}
+                        className={`${
+                            active == '/admin/manageRoommate' &&
+                            'text-rootColor'
+                        } hover:text-rootColor mt-2 cursor-pointer flex items-center`}
+                        onClick={() => {
+                            handleClickPath('/admin/manageRoommate');
+                        }}
+                    >
+                        <LuFile className="pr-1" />
+                        Quản lí bài đăng tìm người ở ghép
                     </Link>
                     <Link
                         href={'/admin/manageCategory'}

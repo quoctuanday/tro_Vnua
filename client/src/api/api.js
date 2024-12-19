@@ -113,6 +113,11 @@ export const getFavourites = () => api.get('/rooms/getFavourites');
 export const createRoommate = (data) =>
     api.post('/roommate/createRoommate', { data });
 export const getRoommatePersonal = () => api.get('/roommate/getPersonRoommate');
+export const updateRoommatePersonal = (data) =>
+    api.put('/roommate/updateRoommatePersonal', { data });
+export const getAllRoommates = () => api.get('/roommate/getAllRoommates');
+export const updateRoommate = (id, data) =>
+    api.put(`/roommate/update/${id}`, { data });
 
 //News personal
 export const createNews = (data) => api.post('/news/createNews', { data });

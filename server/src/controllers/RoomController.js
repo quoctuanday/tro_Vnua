@@ -210,12 +210,41 @@ class RoomController {
 
     getFavourites(req, res) {
         const userId = req.user.userId;
-        FavouriteRoom.find({ userId: userId }).then((favouriteRooms) => {
-            if (!favouriteRooms)
-                res.status(404).json({ message: 'room favourite not found' });
-            const roomIds = favouriteRooms.map((favourite) => favourite.roomId);
-            res.status(200).json({ message: 'List room favourite', roomIds });
-        });
+
+        FavouriteRoom.find({ userId })
+            .then((favouriteRooms) => {
+                if (!favouriteRooms.length) {
+                    return res
+                        .status(404)
+                        .json({ message: 'No favourite rooms found' });
+                }
+
+                const roomIds = favouriteRooms.map(
+                    (favourite) => favourite.roomId
+                );
+
+                return Room.find({ _id: { $in: roomIds } })
+                    .then((rooms) =>
+                        res.status(200).json({
+                            message: 'List of favourite rooms',
+                            roomIds,
+                            rooms,
+                        })
+                    )
+                    .catch((err) =>
+                        res
+                            .status(500)
+                            .json({
+                                message: 'Error fetching rooms',
+                                error: err,
+                            })
+                    );
+            })
+            .catch((err) =>
+                res
+                    .status(500)
+                    .json({ message: 'Error fetching favourites', error: err })
+            );
     }
 
     createFavourite(req, res) {

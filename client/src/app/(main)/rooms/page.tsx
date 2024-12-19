@@ -7,7 +7,7 @@ import {
     removeFavourite,
 } from '@/api/api';
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     FaCamera,
     FaHeart,
@@ -37,6 +37,8 @@ function ListRoomPage() {
     const [numberOfRoom, setNumberOfRoom] = useState(0);
     const [typeSort, setTypeSort] = useState<'Đề xuất' | 'Mới nhất'>('Đề xuất');
     const [isFavourite, setIsFavourite] = useState<string[]>([]);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         const getRooms = async () => {
@@ -91,6 +93,29 @@ function ListRoomPage() {
             await addFavourite(roomId);
         }
     };
+    const handleSearch = () => {
+        const searchResults = rooms.filter((room) => {
+            if (!room.title) return;
+            if (!searchInputRef.current) return;
+            const value = searchInputRef.current.value;
+            const matchTitle = room.title
+                .toLowerCase()
+                .includes(value.toLowerCase());
+
+            return matchTitle;
+        });
+        console.log(searchResults);
+        if (searchResults.length > 0) {
+            setMessage('');
+            setCurrentPage(1);
+            setFilterRooms(searchResults);
+        } else {
+            setMessage('Không tìm thấy bài đăng nào !');
+            setFilterRooms([]);
+        }
+        if (!searchInputRef.current) return;
+        searchInputRef.current.value = '';
+    };
 
     const roomsPerPage = 5;
     const totalRooms = filterRooms.length;
@@ -111,11 +136,15 @@ function ListRoomPage() {
                     </span>
                     <div className="relative mt-[1rem]">
                         <input
+                            ref={searchInputRef}
                             placeholder="Tìm kiếm"
                             className="rounded-[10px] w-full border-2 px-2 py-1 outline-none"
                             type="text"
                         />
-                        <button className="absolute top-0 bottom-0 right-0 px-2 py-1 bg-rootColor text-white rounded-r-[10px]">
+                        <button
+                            onClick={() => handleSearch()}
+                            className="absolute top-0 bottom-0 right-0 px-2 py-1 bg-rootColor text-white rounded-r-[10px]"
+                        >
                             <IoSearch />
                         </button>
                     </div>
@@ -163,6 +192,11 @@ function ListRoomPage() {
                         </div>
                     </div>
                     <div className="mt-3">
+                        {currentRooms.length === 0 && (
+                            <div className="flex items-center justify-center text-red-400 mt-4">
+                                <span>{message}</span>
+                            </div>
+                        )}
                         {currentRooms.map((room) => {
                             const images = room.images.slice(0, 4);
                             return (

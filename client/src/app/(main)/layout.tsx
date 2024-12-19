@@ -1,5 +1,6 @@
 'use client';
 import { getUser } from '@/api/api';
+import FavoriteBox from '@/components/favoritebox';
 import { useUser } from '@/store/userData';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ export default function MainLayout({
 }>) {
     const { userLoginData, setUserLoginData } = useUser();
     const [isClient, setIsClient] = useState(false);
+    const [isFavouriteBox, setIsFavouriteBox] = useState(false);
     useEffect(() => {
         setIsClient(true);
         const fetchData = async () => {
@@ -50,7 +52,24 @@ export default function MainLayout({
                     <div className="flex items-center roboto-bold">
                         {userLoginData ? (
                             <>
-                                <FaHeart className="ml-4 text-[#de0305] hover:text-[#de03079a] cursor-pointer" />
+                                <div className="relative">
+                                    <button
+                                        onClick={() => {
+                                            setIsFavouriteBox(!isFavouriteBox);
+                                        }}
+                                    >
+                                        <FaHeart className="ml-4 text-[#de0305] hover:text-[#de03079a] cursor-pointer" />
+                                    </button>
+                                    {isFavouriteBox && (
+                                        <div className="box-open absolute  right-0 bg-white rounded w-[30rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
+                                            <FavoriteBox
+                                                setIsFavouriteBox={
+                                                    setIsFavouriteBox
+                                                }
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                                 <Link href={'/profile'} className="block">
                                     <Image
                                         src={
@@ -98,7 +117,7 @@ export default function MainLayout({
                         Cho thuê phòng
                     </Link>
                     <Link
-                        href={'#'}
+                        href={'/roommates'}
                         className="roboto-bold ml-9 hover:underline block"
                     >
                         Tìm người ở ghép

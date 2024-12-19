@@ -16,6 +16,7 @@ import { Toaster } from 'react-hot-toast';
 import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
 import { FaPencil } from 'react-icons/fa6';
+import Link from 'next/link';
 
 function RoommateFinderPage() {
     const { socket } = useUser();
@@ -25,6 +26,11 @@ function RoommateFinderPage() {
     const [sortCriterion, setSortCriterion] = useState<
         'name' | 'date' | 'price'
     >('date');
+    const [action, setAction] = useState(true);
+    const [currentRoommateIndex, setCurrentRoommateIndex] = useState<
+        number | null
+    >(0);
+
     useEffect(() => {
         let isMounted = true;
         const getData = async () => {
@@ -36,8 +42,8 @@ function RoommateFinderPage() {
         };
         getData();
         if (!socket) return;
-        socket.on('room-update', () => {
-            console.log('Room updated');
+        socket.on('roommate-update', () => {
+            console.log('roommate-update');
             getData();
         });
         return () => {
@@ -79,12 +85,31 @@ function RoommateFinderPage() {
                 <div
                     onClick={() => {
                         setFormVisible(true);
+                        setAction(true);
                     }}
                 >
                     <MdAddBox className="ml-2 hover:text-rootColor " />
                 </div>
             </div>
-            {formVisible && <PostFindMate setFormVisible={setFormVisible} />}
+            {action
+                ? formVisible &&
+                  currentRoommateIndex !== null && (
+                      <PostFindMate
+                          setFormVisible={setFormVisible}
+                          action={true}
+                          roommates={roommates}
+                          roommateIndex={0}
+                      />
+                  )
+                : formVisible &&
+                  currentRoommateIndex !== null && (
+                      <PostFindMate
+                          setFormVisible={setFormVisible}
+                          action={false}
+                          roommates={roommates}
+                          roommateIndex={currentRoommateIndex}
+                      />
+                  )}
             <div className="mt-1 flex items-center justify-end">
                 <select
                     name=""
@@ -119,6 +144,12 @@ function RoommateFinderPage() {
                         <FaSortAmountDownAlt />
                     </button>
                 )}
+                <Link
+                    href={'/profile/TrashRoom'}
+                    className="block ml-2 hover:text-rootColor"
+                >
+                    <FaTrash />
+                </Link>
             </div>
             <div className="">
                 {sortedRoommates ? (
@@ -158,7 +189,11 @@ function RoommateFinderPage() {
                                     </div>
                                     <div className="ml-auto">
                                         <button
-                                            onClick={() => {}}
+                                            onClick={() => {
+                                                setCurrentRoommateIndex(index);
+                                                setFormVisible(true);
+                                                setAction(false);
+                                            }}
                                             className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
                                         >
                                             <FaPencil />
