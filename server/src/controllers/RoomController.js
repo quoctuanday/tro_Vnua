@@ -232,12 +232,10 @@ class RoomController {
                         })
                     )
                     .catch((err) =>
-                        res
-                            .status(500)
-                            .json({
-                                message: 'Error fetching rooms',
-                                error: err,
-                            })
+                        res.status(500).json({
+                            message: 'Error fetching rooms',
+                            error: err,
+                        })
                     );
             })
             .catch((err) =>

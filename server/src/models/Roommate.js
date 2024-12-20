@@ -25,6 +25,7 @@ const Roommate = new Schema(
         price: { type: Number, required: true },
         numberOfPeople: { type: Number, required: true },
         isAvailable: { type: Boolean, required: true, default: false },
+        isCheckout: { type: Boolean, required: true, default: false },
         rate: { type: Number, default: 0 },
     },
     { timestamps: true }

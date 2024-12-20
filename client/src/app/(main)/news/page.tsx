@@ -60,7 +60,7 @@ function NewsPage() {
                             </div>
                             <div className="row-span-1 rounded-b bg-white ml-3 ">
                                 <p className=" mt-3 roboto-thin">Tin tức</p>
-                                <h2 className=" roboto-bold text-[1.3rem] ">
+                                <h2 className=" roboto-bold text-[1.3rem] line-clamp-2 ">
                                     {news.title}
                                 </h2>
                                 <p>Ngày đăng: {dateConvert(news.createdAt)}</p>

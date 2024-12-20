@@ -1,10 +1,10 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { MdAddBox } from 'react-icons/md';
+import { MdAddBox, MdOutlinePayment } from 'react-icons/md';
 import PostFindMate from '@/components/postFindMate';
 import { useUser } from '@/store/userData';
 import { Roommate } from '@/schema/Roommate';
-import { getRoommatePersonal } from '@/api/api';
+import { checkOut, getRoommatePersonal, updateCheckout } from '@/api/api';
 import {
     FaCamera,
     FaSortAmountDown,
@@ -17,27 +17,58 @@ import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
 import { FaPencil } from 'react-icons/fa6';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function RoommateFinderPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const { socket } = useUser();
     const [roommates, setRoommates] = useState<Roommate[]>([]);
+    const [filterRoommates, setFilterRoommates] = useState<Roommate[]>([]);
     const [formVisible, setFormVisible] = useState(false);
     const [reverseSort, setReverseSort] = useState(false);
     const [sortCriterion, setSortCriterion] = useState<
         'name' | 'date' | 'price'
     >('date');
     const [action, setAction] = useState(true);
+    const [isAvailable, setIsAvailable] = useState(true);
+
     const [currentRoommateIndex, setCurrentRoommateIndex] = useState<
         number | null
     >(0);
+
+    useEffect(() => {
+        if (searchParams) {
+            const fetchCallback = async () => {
+                try {
+                    const query = new URLSearchParams(searchParams).toString();
+                    const response = await updateCheckout(query, {
+                        type: false,
+                    });
+                    if (!response) {
+                        throw new Error('Không thể xử lý callback');
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            fetchCallback();
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         let isMounted = true;
         const getData = async () => {
             const response = await getRoommatePersonal();
             if (isMounted && response) {
+                const data = response.data.roommates;
+
                 console.log(response.data.roommates);
                 setRoommates(response.data.roommates);
+                const filteredRooms = data.filter(
+                    (Roommate: Roommate) => Roommate.isAvailable
+                );
+                setFilterRoommates(filteredRooms);
             }
         };
         getData();
@@ -53,7 +84,7 @@ function RoommateFinderPage() {
 
     //sort roommate
     const getSortedRoommates = () => {
-        const sorted = [...roommates].sort((a, b) => {
+        const sorted = [...filterRoommates].sort((a, b) => {
             switch (sortCriterion) {
                 case 'name':
                     return a.title.localeCompare(b.title);
@@ -77,6 +108,17 @@ function RoommateFinderPage() {
     };
 
     const sortedRoommates = getSortedRoommates();
+
+    const handleCheckout = async (roomId: string, type: boolean) => {
+        const response = await checkOut({ roomId, type });
+        if (response) {
+            const data = response.data;
+            const shortLink = data.vnpUrl;
+            setTimeout(() => {
+                router.push(shortLink);
+            }, 500);
+        }
+    };
 
     return (
         <div className="p-[1.3rem] roboto-regular">
@@ -110,47 +152,84 @@ function RoommateFinderPage() {
                           roommateIndex={currentRoommateIndex}
                       />
                   )}
-            <div className="mt-1 flex items-center justify-end">
-                <select
-                    name=""
-                    id=""
-                    onChange={(e) =>
-                        setSortCriterion(
-                            e.target.value as 'name' | 'date' | 'price'
-                        )
-                    }
-                    className="rounded border-2 outline-none px-2 py-1"
-                >
-                    <option value="date">Sắp xếp theo ngày đăng</option>
-                    <option value="price">Sắp xếp theo giá</option>
-                    <option value="name">Sắp xếp theo tên</option>
-                </select>
-                {reverseSort ? (
+            <div className="flex items-center justify-between">
+                <div className="flex items-center">
                     <button
                         onClick={() => {
-                            setReverseSort(false);
+                            setIsAvailable(false);
+                            const filteredRooms = roommates.filter(
+                                (roommate) => !roommate.isAvailable
+                            );
+                            setFilterRoommates(filteredRooms);
                         }}
-                        className="ml-2 hover:text-rootColor cursor-pointer"
+                        className={`roboto-regular ${
+                            isAvailable
+                                ? ''
+                                : 'border-b-2 roboto-bold border-black'
+                        }`}
                     >
-                        <FaSortAmountDown />
+                        Chưa được duyệt
                     </button>
-                ) : (
                     <button
                         onClick={() => {
-                            setReverseSort(true);
+                            setIsAvailable(true);
+                            const filteredRooms = roommates.filter(
+                                (roommate) => roommate.isAvailable
+                            );
+                            setFilterRoommates(filteredRooms);
                         }}
-                        className="ml-2 hover:text-rootColor cursor-pointer"
+                        className={`roboto-regular ml-2 ${
+                            isAvailable
+                                ? 'border-b-2 roboto-bold border-black'
+                                : ''
+                        }`}
                     >
-                        <FaSortAmountDownAlt />
+                        Đã duyệt
                     </button>
-                )}
-                <Link
-                    href={'/profile/TrashRoom'}
-                    className="block ml-2 hover:text-rootColor"
-                >
-                    <FaTrash />
-                </Link>
+                </div>
+                <div className="mt-1 flex items-center justify-end">
+                    <select
+                        name=""
+                        id=""
+                        onChange={(e) =>
+                            setSortCriterion(
+                                e.target.value as 'name' | 'date' | 'price'
+                            )
+                        }
+                        className="rounded border-2 outline-none px-2 py-1"
+                    >
+                        <option value="date">Sắp xếp theo ngày đăng</option>
+                        <option value="price">Sắp xếp theo giá</option>
+                        <option value="name">Sắp xếp theo tên</option>
+                    </select>
+                    {reverseSort ? (
+                        <button
+                            onClick={() => {
+                                setReverseSort(false);
+                            }}
+                            className="ml-2 hover:text-rootColor cursor-pointer"
+                        >
+                            <FaSortAmountDown />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                setReverseSort(true);
+                            }}
+                            className="ml-2 hover:text-rootColor cursor-pointer"
+                        >
+                            <FaSortAmountDownAlt />
+                        </button>
+                    )}
+                    <Link
+                        href={'/profile/TrashRoom'}
+                        className="block ml-2 hover:text-rootColor"
+                    >
+                        <FaTrash />
+                    </Link>
+                </div>
             </div>
+
             <div className="">
                 {sortedRoommates ? (
                     <>
@@ -188,16 +267,38 @@ function RoommateFinderPage() {
                                         </div>
                                     </div>
                                     <div className="ml-auto">
-                                        <button
-                                            onClick={() => {
-                                                setCurrentRoommateIndex(index);
-                                                setFormVisible(true);
-                                                setAction(false);
-                                            }}
-                                            className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
-                                        >
-                                            <FaPencil />
-                                        </button>
+                                        {room.isAvailable ? (
+                                            <button
+                                                onClick={() => {
+                                                    handleCheckout(
+                                                        room._id,
+                                                        false
+                                                    );
+                                                }}
+                                                className={`px-2 py-1 rounded text-white ${
+                                                    room.isCheckout
+                                                        ? 'bg-gray-500'
+                                                        : 'bg-rootColor hover:bg-[#699ba3c8] '
+                                                }`}
+                                                disabled={room.isCheckout}
+                                            >
+                                                <MdOutlinePayment />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => {
+                                                    setCurrentRoommateIndex(
+                                                        index
+                                                    );
+                                                    setFormVisible(true);
+                                                    setAction(false);
+                                                }}
+                                                className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
+                                            >
+                                                <FaPencil />
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => {}}
                                             className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white"

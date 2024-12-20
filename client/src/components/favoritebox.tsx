@@ -48,38 +48,53 @@ const FavoriteBox: React.FC<Props> = ({ setIsFavouriteBox }) => {
             <div>
                 {type ? (
                     <div>
-                        {rooms.map((room) => (
-                            <Link
-                                href={`/rooms/${room._id}`}
-                                onClick={() => {
-                                    setIsFavouriteBox(false);
-                                }}
-                                className="block px-1 hover:bg-[#eae9e9]"
-                                key={room._id}
-                            >
-                                <div className="grid grid-cols-4 gap-1 py-1">
-                                    <Image
-                                        src={room.images[0]}
-                                        alt=""
-                                        width={100}
-                                        height={100}
-                                        className=" col-span-1 w-full h-[5rem] rounded"
-                                    ></Image>
-                                    <div className="col-span-3 flex flex-col justify-between">
-                                        <h1 className="roboto-bold line-clamp-1">
-                                            {room.title}
-                                        </h1>
-                                        <span>
-                                            Giá: {Currency(room.price, 'vi-VN')}{' '}
-                                            triệu/tháng
-                                        </span>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
+                        {rooms.length > 0 ? (
+                            <div className="">
+                                {rooms.map((room) => (
+                                    <Link
+                                        href={`/rooms/${room._id}`}
+                                        onClick={() => {
+                                            setIsFavouriteBox(false);
+                                        }}
+                                        className="block px-1 hover:bg-[#eae9e9]"
+                                        key={room._id}
+                                    >
+                                        <div className="grid grid-cols-4 gap-1 py-1">
+                                            <Image
+                                                src={room.images[0]}
+                                                alt=""
+                                                width={100}
+                                                height={100}
+                                                className=" col-span-1 w-full h-[5rem] rounded"
+                                            ></Image>
+                                            <div className="col-span-3 flex flex-col justify-between">
+                                                <h1 className="roboto-bold line-clamp-1">
+                                                    {room.title}
+                                                </h1>
+                                                <span>
+                                                    Giá:{' '}
+                                                    {Currency(
+                                                        room.price,
+                                                        'vi-VN'
+                                                    )}{' '}
+                                                    triệu/tháng
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                                s
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center roboto-regular text-red-500">
+                                Chưa có phòng nào được thêm vào.
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    <div></div>
+                    <div className="flex items-center justify-center roboto-regular text-red-500">
+                        Chưa có phòng nào được thêm vào.
+                    </div>
                 )}
             </div>
         </div>

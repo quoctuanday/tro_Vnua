@@ -145,3 +145,8 @@ export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
 //Comment
 export const createComment = (data) => api.post('/comments/create', { data });
 export const getComment = (id) => api.get(`/comments/get/${id}`);
+
+//Payment
+export const checkOut = (data) => api.post('/payment/vnpay/create', { data });
+export const updateCheckout = (query, data) =>
+    api.put(`/payment/vnpay/callback?${query}`, { data });

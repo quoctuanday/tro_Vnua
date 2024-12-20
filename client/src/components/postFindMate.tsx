@@ -13,8 +13,9 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import toast, { Toaster } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
-import { createRoommate, updateRoommatePersonal } from '@/api/api';
+import { createRoommate, getCategory, updateRoommatePersonal } from '@/api/api';
 import { Roommate } from '@/schema/Roommate';
+import { Category } from '@/schema/Category';
 
 interface PostFindMateProps {
     setFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,6 +37,8 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
 }) => {
     const { userLoginData } = useUser();
     const { register, handleSubmit, getValues, setValue, watch } = useForm();
+    const [category, setCategory] = useState<Category[]>([]);
+    const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
     const [changeImage, setChangeImage] = useState<string[]>([]);
     const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
@@ -75,8 +78,39 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                 setUploadImageURL([urls]);
                 setChangeImage([urls]);
             }
+        } else {
+            const getCategories = async () => {
+                const response = await getCategory();
+                if (response) {
+                    const data = response.data.category;
+                    console.log(data);
+                    setCategory(data);
+                }
+            };
+            getCategories();
         }
     }, [action, setValue, roommateIndex, roommates]);
+    const addRoomIntoCategory = (id: string, categoryId: string) => {
+        setChildCateId((prev) => {
+            const filteredIds = prev.filter((id) => {
+                // Tìm danh mục chứa child này
+                const categoryContainsChild = category.some((cat) =>
+                    cat.child.some(
+                        (child) => child._id === id && cat._id !== categoryId
+                    )
+                );
+                return categoryContainsChild;
+            });
+
+            // Nếu đã chọn child này, bỏ chọn nó; nếu chưa, thêm nó vào
+            if (prev.includes(id)) {
+                return filteredIds;
+            } else {
+                return [...filteredIds, id];
+            }
+        });
+        console.log(childCateId);
+    };
 
     //Set image
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,6 +204,7 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                 const response = await createRoommate({
                     data,
                     userId,
+                    childCateId,
                     folderPath,
                     successfulUploads,
                     coords,
@@ -352,6 +387,47 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                             />
                             <span>m&sup2;</span>
                         </div>
+                    </div>
+                    <div className="mt-3 ">
+                        {category.length > 0 && (
+                            <div className="">
+                                <h1 className="roboto-bold">Danh mục:</h1>
+                                {category.map((category) => (
+                                    <div
+                                        className="flex items-center mt-2"
+                                        key={category._id}
+                                    >
+                                        <h1>{category.name}:</h1>
+                                        {category.child.map((child) => (
+                                            <div
+                                                className="ml-2"
+                                                key={child._id}
+                                            >
+                                                <div
+                                                    onClick={() =>
+                                                        addRoomIntoCategory(
+                                                            child._id,
+                                                            category._id
+                                                        )
+                                                    }
+                                                    className={`px-2 rounded-[10px] py-1 border-[1px] transition-colors cursor-pointer duration-300
+                                                            ${
+                                                                childCateId.includes(
+                                                                    child._id
+                                                                )
+                                                                    ? 'bg-rootColor text-white'
+                                                                    : ''
+                                                            }
+                                                            `}
+                                                >
+                                                    {child.name}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div className="mt-3">
                         <label className="roboto-bold">Yêu cầu:</label>

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
             { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
             { protocol: 'https', hostname: 'img.iproperty.com.my' },
             { protocol: 'https', hostname: 'cdn.tuoitre.vn' },
+            { protocol: 'https', hostname: 'cafefcdn.com' },
         ],
     },
     async redirects() {

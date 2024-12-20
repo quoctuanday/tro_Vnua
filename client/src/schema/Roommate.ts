@@ -17,6 +17,7 @@ export type Roommate = {
             longitude: number;
         };
     };
+    isCheckout?: boolean;
     urlSaveImages: string;
     price: number;
     numberOfPeople: number;

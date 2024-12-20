@@ -15,6 +15,7 @@ export type Room = {
             longitude: number;
         };
     };
+    isCheckout?: boolean;
     urlSaveImages: string;
     price: number;
     acreage: number;

@@ -61,7 +61,7 @@ export default function MainLayout({
                                         <FaHeart className="ml-4 text-[#de0305] hover:text-[#de03079a] cursor-pointer" />
                                     </button>
                                     {isFavouriteBox && (
-                                        <div className="box-open absolute  right-0 bg-white rounded w-[30rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
+                                        <div className="box-open absolute  right-0 bg-white rounded w-[30rem] min-h-[20rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
                                             <FavoriteBox
                                                 setIsFavouriteBox={
                                                     setIsFavouriteBox

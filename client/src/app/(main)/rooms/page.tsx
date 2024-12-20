@@ -38,7 +38,6 @@ function ListRoomPage() {
     const [typeSort, setTypeSort] = useState<'Đề xuất' | 'Mới nhất'>('Đề xuất');
     const [isFavourite, setIsFavourite] = useState<string[]>([]);
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [message, setMessage] = useState('');
 
     useEffect(() => {
         const getRooms = async () => {
@@ -46,8 +45,9 @@ function ListRoomPage() {
             if (response) {
                 const data = response.data.formattedRooms;
                 const availableRooms = data.filter(
-                    (room: Room) => room.isAvailable
+                    (room: Room) => room.isAvailable && room.isCheckout
                 );
+
                 availableRooms.sort((a: Room, b: Room) => b.rate - a.rate);
                 setNumberOfRoom(availableRooms.length);
 
@@ -106,11 +106,9 @@ function ListRoomPage() {
         });
         console.log(searchResults);
         if (searchResults.length > 0) {
-            setMessage('');
             setCurrentPage(1);
             setFilterRooms(searchResults);
         } else {
-            setMessage('Không tìm thấy bài đăng nào !');
             setFilterRooms([]);
         }
         if (!searchInputRef.current) return;
@@ -194,7 +192,7 @@ function ListRoomPage() {
                     <div className="mt-3">
                         {currentRooms.length === 0 && (
                             <div className="flex items-center justify-center text-red-400 mt-4">
-                                <span>{message}</span>
+                                <span>Không có phòng nào!</span>
                             </div>
                         )}
                         {currentRooms.map((room) => {

@@ -23,6 +23,7 @@ const Room = new Schema(
         urlSaveImages: { type: String },
         price: { type: Number, required: true },
         isAvailable: { type: Boolean, required: true, default: false },
+        isCheckout: { type: Boolean, required: true, default: false },
         rate: { type: Number, default: 0 },
     },
     { timestamps: true }
