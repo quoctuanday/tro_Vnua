@@ -347,14 +347,14 @@ function ManagePostPage() {
                 </div>
             </div>
             <div className="bg-white">
-                <div className="grid grid-cols-11">
+                <div className="grid grid-cols-12">
                     <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
                         Stt
                     </div>
                     <div className="col-span-3 flex justify-center items-center py-1 roboto-bold border-[1px]">
                         Tiêu đề
                     </div>
-                    <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
+                    <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
                         Người đăng
                     </div>
                     <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
@@ -362,6 +362,9 @@ function ManagePostPage() {
                     </div>
                     <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
                         Trạng thái
+                    </div>
+                    <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
+                        Thanh toán
                     </div>
                     <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
                         Thao tác
@@ -376,7 +379,7 @@ function ManagePostPage() {
                     <div className="">
                         {currentRooms.map((room, index) => (
                             <div
-                                className="grid grid-cols-11  h-[3.75rem]"
+                                className="grid grid-cols-12  h-[3.75rem]"
                                 key={room._id}
                             >
                                 <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
@@ -385,7 +388,7 @@ function ManagePostPage() {
                                 <div className="col-span-3 flex  items-center py-1 roboto-bold border-[1px] line-clamp-2 px-1">
                                     {room.title}
                                 </div>
-                                <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
+                                <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
                                     {room.userName}
                                 </div>
                                 <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
@@ -397,6 +400,11 @@ function ManagePostPage() {
                                     {room.isAvailable
                                         ? 'Đã duyệt'
                                         : 'Chưa được duyệt'}
+                                </div>
+                                <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
+                                    {room.isCheckout
+                                        ? 'Đã thanh toán'
+                                        : 'Chưa thanh toán'}
                                 </div>
                                 <div className="col-span-1 flex justify-center items-center py-1 roboto-bold border-[1px]">
                                     <button

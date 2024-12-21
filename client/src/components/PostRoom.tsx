@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
 import { createRoom, getCategory } from '@/api/api';
 import { Category } from '@/schema/Category';
+import { NumericFormat } from 'react-number-format';
 
 //type
 interface PostRoomProps {
@@ -23,17 +24,24 @@ type Coordinates = {
     latitude: number;
     longitude: number;
 } | null;
+const captions = [
+    'Hình ảnh mặt tiền',
+    'Phòng ngủ',
+    'Nhà vệ sinh',
+    'Chỗ nấu ăn',
+    'Ngõ vào',
+];
 
 const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     const { userLoginData } = useUser();
-    const { register, handleSubmit, getValues, setValue } = useForm();
+    const { register, handleSubmit, getValues, setValue, watch } = useForm();
     const [category, setCategory] = useState<Category[]>([]);
     const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
-    const [changeImage, setChangeImage] = useState<string[]>([]);
-    const uploadImage = useRef<HTMLInputElement>(null);
+    const [changeImage, setChangeImage] = useState<string[]>(Array(5).fill(''));
+    const uploadImage = useRef<(HTMLInputElement | null)[]>([]);
     const [coords, setCoords] = useState<Coordinates>(null);
-    const [error, setError] = useState();
+    const [error, setError] = useState('');
     const [location, setLocation] = useState('');
 
     useEffect(() => {
@@ -72,7 +80,10 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
     };
 
     //Set image
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        index: number
+    ) => {
         const selectedFiles = e.target.files;
         const maxSizeInMB = 2;
         const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
@@ -87,21 +98,31 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                 }
                 return true;
             });
+
             const imageUrls = validFiles.map((file) =>
                 URL.createObjectURL(file)
             );
-            setChangeImage((prevFiles) => [...prevFiles, ...imageUrls]);
-            setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+
+            setChangeImage((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = imageUrls[0];
+                return newFiles;
+            });
+
+            setFiles((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = validFiles[0];
+                return newFiles;
+            });
+
             console.log(files);
         }
     };
 
     const handleRemoveImage = (index: number) => {
-        setChangeImage((prevImages) =>
-            prevImages.filter((_, i) => i !== index)
-        );
-
-        setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+        const newChangeImage = [...changeImage];
+        newChangeImage[index] = '';
+        setChangeImage(newChangeImage);
     };
 
     //set map
@@ -122,10 +143,13 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
 
     //submit form
     const onSubmit = async (data: unknown) => {
-        if (!files) {
+        if (changeImage.includes('')) {
+            console.log('Chưa có ảnh', changeImage);
             toast.error('Chưa chọn ảnh!');
+            setError('Bạn chưa cung cấp đầy đủ ảnh!');
             return;
         }
+        console.log(changeImage);
         const randomFolderName = uuidv4();
         const folderPath = `troVnua/${userLoginData?.userName}/room/${randomFolderName}`;
         try {
@@ -259,6 +283,7 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                                     key={child._id}
                                                 >
                                                     <button
+                                                        type="button"
                                                         onClick={() =>
                                                             addRoomIntoCategory(
                                                                 child._id,
@@ -292,28 +317,40 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 className="min-h-[10rem] w-full mt-1 border-2 outline-none rounded"
                             ></textarea>
                         </div>
-                        <div className="mt-3 flex items-center">
+                        <div className="mt-3 flex items-center justify-between">
                             <div className="flex items-center ">
                                 <div className="roboto-bold">Giá:</div>
-                                <input
-                                    type="number"
-                                    {...register('price', {
-                                        required: true,
-                                        min: 100000,
-                                    })}
-                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                <NumericFormat
+                                    value={watch('price')}
+                                    onValueChange={(values) => {
+                                        const { value } = values;
+                                        setValue('price', Number(value), {
+                                            shouldValidate: true,
+                                        });
+                                    }}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    allowNegative={false}
+                                    className="ml-1 mt-1 border-b-2 outline-none  text-center px-2 py-1"
                                 />
+                                <span>/1 tháng</span>
                             </div>
                             <div className="flex items-center ml-3 ">
                                 <div className="roboto-bold">Diện tích :</div>
-                                <input
-                                    type="number"
-                                    {...register('acreage', {
-                                        required: true,
-                                        min: 1,
-                                    })}
-                                    className="ml-1 mt-1 border-2 outline-none rounded-[10px] px-2 py-1"
+                                <NumericFormat
+                                    value={watch('acreage')}
+                                    onValueChange={(values) => {
+                                        const { value } = values;
+                                        setValue('acreage', Number(value), {
+                                            shouldValidate: true,
+                                        });
+                                    }}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    allowNegative={false}
+                                    className="ml-1 mt-1 border-b-2 outline-none text-center  px-2 py-1"
                                 />
+                                <span>m&sup2;</span>
                             </div>
                         </div>
                         <div className="mt-3">
@@ -322,49 +359,94 @@ const PostRoom: React.FC<PostRoomProps> = ({ setFormVisible }) => {
                                 <p className="ml-2 text-[#ccc] text-[0.9rem]">
                                     (Phải bao gồm hình ảnh mặt tiền, các phòng,
                                     nhà vệ sinh, chỗ nấu ăn nếu có, đường ngõ
-                                    liền kề )
+                                    liền kề)
                                 </p>
                             </div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="hidden"
-                                onChange={handleImageChange}
-                                ref={uploadImage}
-                            />
                             <div className="flex items-center">
-                                <div className="grid grid-cols-5 gap-2 mt-1">
-                                    {changeImage.map((file, index) => (
-                                        <div
-                                            className="col-span-1 relative"
-                                            key={index}
-                                        >
-                                            <Image
-                                                src={file}
-                                                alt=""
-                                                width={100}
-                                                height={100}
-                                                className="w-[10rem] h-[10rem] rounded-[10px] "
-                                            ></Image>
-                                            <IoCloseCircleOutline
-                                                onClick={() =>
-                                                    handleRemoveImage(index)
-                                                }
-                                                className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
-                                            />
-                                        </div>
-                                    ))}
-                                    <div
-                                        onClick={() => {
-                                            if (uploadImage.current) {
-                                                uploadImage.current.click();
-                                            }
-                                        }}
-                                        className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
-                                    >
-                                        <FiPlus />
-                                    </div>
+                                <div className="grid grid-cols-4 w-full gap-2 mt-1">
+                                    {Array.from({ length: 5 }).map(
+                                        (_, index) => (
+                                            <div
+                                                className="col-span-1 relative"
+                                                key={index}
+                                            >
+                                                {changeImage[index] ? (
+                                                    <>
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <div className="relative">
+                                                                <Image
+                                                                    src={
+                                                                        changeImage[
+                                                                            index
+                                                                        ]
+                                                                    }
+                                                                    alt={`image-${index}`}
+                                                                    width={100}
+                                                                    height={100}
+                                                                    className="w-[10rem] h-[10rem] rounded-[10px]"
+                                                                />
+                                                                <IoCloseCircleOutline
+                                                                    onClick={() =>
+                                                                        handleRemoveImage(
+                                                                            index
+                                                                        )
+                                                                    }
+                                                                    className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
+                                                                />
+                                                            </div>
+                                                            <p className="text-center">
+                                                                {
+                                                                    captions[
+                                                                        index
+                                                                    ]
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center">
+                                                        <div
+                                                            onClick={() => {
+                                                                if (
+                                                                    uploadImage
+                                                                        .current[
+                                                                        index
+                                                                    ]
+                                                                ) {
+                                                                    uploadImage.current[
+                                                                        index
+                                                                    ].click();
+                                                                }
+                                                            }}
+                                                            className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
+                                                        >
+                                                            <FiPlus />
+                                                        </div>
+                                                        <p className="text-center">
+                                                            {captions[index]}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                <input
+                                                    key={index}
+                                                    type="file"
+                                                    ref={(el) =>
+                                                        (uploadImage.current[
+                                                            index
+                                                        ] = el)
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleImageChange(
+                                                            e,
+                                                            index
+                                                        )
+                                                    }
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -24,6 +24,13 @@ type Coordinates = {
     latitude: number;
     longitude: number;
 } | null;
+const captions = [
+    'Hình ảnh mặt tiền',
+    'Phòng ngủ',
+    'Nhà vệ sinh',
+    'Chỗ nấu ăn',
+    'Ngõ vào',
+];
 
 const EditRoom: React.FC<PostRoomProps> = ({
     rooms,
@@ -35,11 +42,11 @@ const EditRoom: React.FC<PostRoomProps> = ({
     const [category, setCategory] = useState<Category[]>([]);
     const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
-    const [changeImage, setChangeImage] = useState<string[]>([]);
+    const [changeImage, setChangeImage] = useState<string[]>(Array(5).fill(''));
+    const uploadImage = useRef<(HTMLInputElement | null)[]>([]);
     const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
-    const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
-    const [error, setError] = useState();
+    const [error, setError] = useState('');
     const [urlSaveImages, setUrlSaveImages] = useState('');
 
     useEffect(() => {
@@ -104,7 +111,10 @@ const EditRoom: React.FC<PostRoomProps> = ({
     };
 
     //Set image
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        index: number
+    ) => {
         const selectedFiles = e.target.files;
         const maxSizeInMB = 2;
         const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
@@ -119,22 +129,32 @@ const EditRoom: React.FC<PostRoomProps> = ({
                 }
                 return true;
             });
+
             const imageUrls = validFiles.map((file) =>
                 URL.createObjectURL(file)
             );
-            setChangeImage((prevFiles) => [...prevFiles, ...imageUrls]);
-            setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+
+            setChangeImage((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = imageUrls[0];
+                return newFiles;
+            });
+
+            setFiles((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = validFiles[0];
+                return newFiles;
+            });
+
             console.log(files);
         }
     };
 
     const handleRemoveImage = (index: number) => {
-        setChangeImage((prevImages) =>
-            prevImages.filter((_, i) => i !== index)
-        );
-        setUploadImageURL((prevImages) =>
-            prevImages.filter((_, i) => i !== index)
-        );
+        const newChangeImage = [...changeImage];
+        newChangeImage[index] = '';
+        setChangeImage(newChangeImage);
+        setUploadImageURL(newChangeImage);
 
         setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
     };
@@ -153,52 +173,59 @@ const EditRoom: React.FC<PostRoomProps> = ({
 
     //submit form
     const onSubmit = async (data: unknown) => {
-        if (!files) {
+        if (changeImage.includes('')) {
+            console.log('Chưa có ảnh', changeImage);
             toast.error('Chưa chọn ảnh!');
+            setError('Bạn chưa cung cấp đầy đủ ảnh!');
             return;
-        }
-        try {
-            //Upload images
-            const uploadImages = await Promise.all(
-                files.map(async (file) => {
-                    const storageRef = ref(
-                        storage,
-                        `${urlSaveImages}/${file.name}`
-                    );
+        } else {
+            try {
+                //Upload images
+                const validFiles = files.filter(
+                    (file) => file !== undefined && file !== null
+                );
+                const uploadImages = await Promise.all(
+                    validFiles.map(async (file) => {
+                        const storageRef = ref(
+                            storage,
+                            `${urlSaveImages}/${file.name}`
+                        );
 
-                    try {
-                        await uploadBytes(storageRef, file);
-                        const url = await getDownloadURL(storageRef);
-                        return url;
-                    } catch (error) {
-                        console.log('Lỗi upload ảnh:', error);
-                        return null;
-                    }
-                })
-            );
+                        try {
+                            await uploadBytes(storageRef, file);
+                            const url = await getDownloadURL(storageRef);
+                            return url;
+                        } catch (error) {
+                            console.log('Lỗi upload ảnh:', error);
+                            return null;
+                        }
+                    })
+                );
 
-            const successfulUploads = uploadImages.filter(
-                (result) => result !== null
-            );
-            const uploadURL = [...uploadImageURL, ...successfulUploads];
+                const successfulUploads = uploadImages.filter(
+                    (result) => result !== null
+                );
+                const uploadURL = [...uploadImageURL, ...successfulUploads];
 
-            console.log(uploadURL);
-            const userId = userLoginData?._id;
+                console.log(uploadURL);
+                const userId = userLoginData?._id;
 
-            console.log(data);
-            const response = await updateRoomPersonal({
-                data,
-                userId,
-                childCateId,
-                uploadURL,
-                coords,
-            });
-            if (response) {
-                toast.success('Chỉnh sửa thông tin thành công!');
-                setEditForm(false);
+                console.log(data);
+                console.log('chan file', changeImage);
+                const response = await updateRoomPersonal({
+                    data,
+                    userId,
+                    childCateId,
+                    uploadURL,
+                    coords,
+                });
+                if (response) {
+                    toast.success('Chỉnh sửa thông tin thành công!');
+                    setEditForm(false);
+                }
+            } catch (error) {
+                console.error('Có lỗi xảy ra trong quá trình upload:', error);
             }
-        } catch (error) {
-            console.error('Có lỗi xảy ra trong quá trình upload:', error);
         }
     };
 
@@ -348,46 +375,96 @@ const EditRoom: React.FC<PostRoomProps> = ({
                         </div>
                         <div className="mt-3">
                             <div className="roboto-bold">Hình ảnh:</div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="hidden"
-                                onChange={handleImageChange}
-                                ref={uploadImage}
-                            />
+                            <p className="ml-2 text-[#ccc] text-[0.9rem]">
+                                (Phải bao gồm hình ảnh mặt tiền, các phòng, nhà
+                                vệ sinh, chỗ nấu ăn nếu có, đường ngõ liền kề)
+                            </p>
+
                             <div className="flex items-center">
-                                <div className="grid grid-cols-5 gap-2 mt-1">
-                                    {changeImage.map((file, index) => (
-                                        <div
-                                            className="col-span-1 relative"
-                                            key={index}
-                                        >
-                                            <Image
-                                                src={file}
-                                                alt=""
-                                                width={100}
-                                                height={100}
-                                                className="w-[10rem] h-[10rem] rounded-[10px] "
-                                            ></Image>
-                                            <IoCloseCircleOutline
-                                                onClick={() =>
-                                                    handleRemoveImage(index)
-                                                }
-                                                className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
-                                            />
-                                        </div>
-                                    ))}
-                                    <div
-                                        onClick={() => {
-                                            if (uploadImage.current) {
-                                                uploadImage.current.click();
-                                            }
-                                        }}
-                                        className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
-                                    >
-                                        <FiPlus />
-                                    </div>
+                                <div className="grid grid-cols-4 w-full gap-2 mt-1">
+                                    {Array.from({ length: 5 }).map(
+                                        (_, index) => (
+                                            <div
+                                                className="col-span-1 relative"
+                                                key={index}
+                                            >
+                                                {changeImage[index] ? (
+                                                    <>
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <div className="relative">
+                                                                <Image
+                                                                    src={
+                                                                        changeImage[
+                                                                            index
+                                                                        ]
+                                                                    }
+                                                                    alt={`image-${index}`}
+                                                                    width={100}
+                                                                    height={100}
+                                                                    className="w-[10rem] h-[10rem] rounded-[10px]"
+                                                                />
+                                                                <IoCloseCircleOutline
+                                                                    onClick={() =>
+                                                                        handleRemoveImage(
+                                                                            index
+                                                                        )
+                                                                    }
+                                                                    className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
+                                                                />
+                                                            </div>
+                                                            <p className="text-center">
+                                                                {
+                                                                    captions[
+                                                                        index
+                                                                    ]
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center">
+                                                        <div
+                                                            onClick={() => {
+                                                                if (
+                                                                    uploadImage
+                                                                        .current[
+                                                                        index
+                                                                    ]
+                                                                ) {
+                                                                    uploadImage.current[
+                                                                        index
+                                                                    ].click();
+                                                                }
+                                                            }}
+                                                            className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
+                                                        >
+                                                            <FiPlus />
+                                                        </div>
+                                                        <p className="text-center">
+                                                            {captions[index]}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                                <input
+                                                    key={index}
+                                                    type="file"
+                                                    ref={(el) =>
+                                                        (uploadImage.current[
+                                                            index
+                                                        ] = el)
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleImageChange(
+                                                            e,
+                                                            index
+                                                        )
+                                                    }
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                />
+                                            </div>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         </div>

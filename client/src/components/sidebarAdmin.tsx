@@ -77,7 +77,7 @@ function SidebarAdmin() {
                         }}
                     >
                         <LuFile className="pr-1" />
-                        Quản lí bài đăng cho thuê phòng
+                        Quản lí cho thuê phòng
                     </Link>
                     <Link
                         href={'/admin/manageRoommate'}
@@ -90,7 +90,7 @@ function SidebarAdmin() {
                         }}
                     >
                         <LuFile className="pr-1" />
-                        Quản lí bài đăng tìm người ở ghép
+                        Quản lí tìm người ở ghép
                     </Link>
                     <Link
                         href={'/admin/manageCategory'}
