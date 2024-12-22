@@ -8,7 +8,14 @@ export type Roommate = {
     contactNumber: string;
     convenience: string;
     contactEmail: string;
-    require: string;
+    require: {
+        gender: string;
+        age: {
+            min: number;
+            max: number;
+        };
+        other: string;
+    };
     description: string;
     location: {
         name: string;

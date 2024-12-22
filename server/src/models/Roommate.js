@@ -11,7 +11,14 @@ const Roommate = new Schema(
         contactNumber: { type: String, required: true },
         contactEmail: { type: String },
         convenience: { type: String, required: true },
-        require: { type: String, required: true },
+        require: {
+            gender: { type: String },
+            age: {
+                min: { type: Number },
+                max: { type: Number },
+            },
+            other: { type: String },
+        },
         location: {
             name: { type: String, required: true },
             coordinates: {

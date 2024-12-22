@@ -119,6 +119,21 @@ export const getAllRoommates = () => api.get('/roommate/getAllRoommates');
 export const updateRoommate = (id, data) =>
     api.put(`/roommate/update/${id}`, { data });
 
+export const deleteRoommatePersonal = (roomId) =>
+    api.delete(`/roommate/deleteRoomPersonal/${roomId}`);
+export const getDeleteRoommatePersonal = () =>
+    api.get('/roommate/getDeleteRoom');
+export const restoreRoommatePersonal = (roomId) =>
+    api.patch(`roommate/restoreRoomPersonal/${roomId}`);
+export const forceDeleteRoommate = (roomId) =>
+    api.delete(`/roommate/forceDeleteRoomPersonal/${roomId}`);
+
+export const addFavouriteRoommate = (roomId) =>
+    api.post(`/roommate/createFavourite/${roomId}`);
+export const removeFavouriteRoommate = (roomId) =>
+    api.delete(`/roommate/deleteFavourite/${roomId}`);
+export const getFavouritesRoommate = () => api.get('/roommate/getFavourites');
+
 //News personal
 export const createNews = (data) => api.post('/news/createNews', { data });
 export const getNewsPersonal = () => api.get('/news/getNewsPersonal');
@@ -144,7 +159,8 @@ export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
 
 //Comment
 export const createComment = (data) => api.post('/comments/create', { data });
-export const getComment = (id) => api.get(`/comments/get/${id}`);
+export const getComment = (id, type) =>
+    api.get(`/comments/get/${id}`, { type });
 
 //Payment
 export const checkOut = (data) => api.post('/payment/vnpay/create', { data });

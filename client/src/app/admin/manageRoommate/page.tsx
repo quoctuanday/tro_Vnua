@@ -404,7 +404,7 @@ function ManageRoomatePage() {
                                         : 'Chưa được duyệt'}
                                 </div>
                                 <div className="col-span-2 flex justify-center items-center py-1 roboto-bold border-[1px]">
-                                    {roommate.isAvailable
+                                    {roommate.isCheckout
                                         ? 'Đã thanh toán'
                                         : 'Chưa thanh toán'}
                                 </div>

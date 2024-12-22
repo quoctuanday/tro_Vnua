@@ -16,7 +16,7 @@ router.put(
     authorization(['admin']),
     categoryController.update
 );
-router.get('/get', authenticateToken, categoryController.get);
+router.get('/get', categoryController.get);
 router.post(
     '/create',
     authenticateToken,

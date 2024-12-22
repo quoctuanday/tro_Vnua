@@ -10,12 +10,13 @@ import { FiPlus } from 'react-icons/fi';
 import { IoClose, IoCloseCircleOutline } from 'react-icons/io5';
 import { NumericFormat } from 'react-number-format';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from '@/firebase/config';
 import { createRoommate, getCategory, updateRoommatePersonal } from '@/api/api';
 import { Roommate } from '@/schema/Roommate';
 import { Category } from '@/schema/Category';
+import { TfiReload } from 'react-icons/tfi';
 
 interface PostFindMateProps {
     setFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -23,6 +24,13 @@ interface PostFindMateProps {
     roommates: Roommate[];
     roommateIndex: number;
 }
+const captions = [
+    'Hình ảnh mặt tiền',
+    'Phòng ngủ',
+    'Nhà vệ sinh',
+    'Chỗ nấu ăn',
+    'Ngõ vào',
+];
 
 type Coordinates = {
     latitude: number;
@@ -40,21 +48,83 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
     const [category, setCategory] = useState<Category[]>([]);
     const [childCateId, setChildCateId] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
-    const [changeImage, setChangeImage] = useState<string[]>([]);
+    const [changeImage, setChangeImage] = useState<string[]>(Array(5).fill(''));
+    const uploadImage = useRef<(HTMLInputElement | null)[]>([]);
     const [uploadImageURL, setUploadImageURL] = useState<string[]>([]);
-    const uploadImage = useRef<HTMLInputElement>(null);
     const [coords, setCoords] = useState<Coordinates>(null);
-    const [error, setError] = useState();
+    const [error, setError] = useState('');
     const [location, setLocation] = useState('');
     const [urlSaveImages, setUrlSaveImages] = useState('');
+    const [isRoting, setIsRoting] = useState(false);
+    const [captcha, setCaptcha] = useState('');
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
+    const drawCaptcha = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const captchaText = Math.random()
+            .toString(36)
+            .substring(2, 8)
+            .toUpperCase();
+        setCaptcha(captchaText);
+        console.log('Captcha:', captchaText);
+
+        ctx.font = '30px Arial';
+        ctx.fillStyle = '#000';
+        ctx.fillText(captchaText, 50, 35);
+
+        for (let i = 0; i < 10; i++) {
+            ctx.beginPath();
+            ctx.moveTo(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height
+            );
+            ctx.lineTo(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height
+            );
+            ctx.strokeStyle = '#ccc';
+            ctx.stroke();
+        }
+    };
     useEffect(() => {
+        drawCaptcha();
         if (!action) {
             const roommate = roommates[roommateIndex];
+            const getCategories = async () => {
+                const response = await getCategory();
+                if (response) {
+                    const data = response.data.category;
+                    setCategory(data);
+                    const matchedChildIds: string[] = [];
+                    data.forEach((category: Category) => {
+                        category.child.forEach((child) => {
+                            if (child.roommateId?.includes(roommate._id)) {
+                                matchedChildIds.push(child._id);
+                            }
+                        });
+                    });
+                    console.log(matchedChildIds);
+                    setChildCateId(matchedChildIds);
+                }
+            };
+            getCategories();
             setValue('_id', roommate._id);
             setValue('title', roommate.title);
             setValue('convenience', roommate.convenience);
-            setValue('require', roommate.require);
+            setValue('min', roommate.require.age.min);
+            setValue('max', roommate.require.age.max);
+            setValue('gender', roommate.require.gender);
+            setValue('other', roommate.require.other);
             setValue('userId', roommate.userId);
             setValue('ownerName', roommate.ownerName);
             setValue('contactNumber', roommate.contactNumber);
@@ -90,7 +160,7 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
             getCategories();
         }
     }, [action, setValue, roommateIndex, roommates]);
-    const addRoomIntoCategory = (id: string, categoryId: string) => {
+    const addRoommateIntoCategory = (id: string, categoryId: string) => {
         setChildCateId((prev) => {
             const filteredIds = prev.filter((id) => {
                 // Tìm danh mục chứa child này
@@ -111,9 +181,22 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
         });
         console.log(childCateId);
     };
+    const addRoommateIntoCategoryEdit = (id: string) => {
+        setChildCateId((prev) => {
+            if (prev.includes(id)) {
+                return prev.filter((childId) => childId !== id);
+            } else {
+                return [...prev, id];
+            }
+        });
+        console.log(childCateId);
+    };
 
     //Set image
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        index: number
+    ) => {
         const selectedFiles = e.target.files;
         const maxSizeInMB = 2;
         const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
@@ -128,26 +211,37 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                 }
                 return true;
             });
+
             const imageUrls = validFiles.map((file) =>
                 URL.createObjectURL(file)
             );
-            setChangeImage((prevFiles) => [...prevFiles, ...imageUrls]);
-            setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+
+            setChangeImage((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = imageUrls[0];
+                return newFiles;
+            });
+
+            setFiles((prevFiles) => {
+                const newFiles = [...prevFiles];
+                newFiles[index] = validFiles[0];
+                return newFiles;
+            });
+
             console.log(files);
         }
     };
 
     const handleRemoveImage = (index: number) => {
-        if (!action) {
-            setUploadImageURL((prevImages) =>
-                prevImages.filter((_, i) => i !== index)
-            );
-        }
-        setChangeImage((prevImages) =>
-            prevImages.filter((_, i) => i !== index)
-        );
+        const newChangeImage = [...changeImage];
+        newChangeImage[index] = '';
+        setChangeImage(newChangeImage);
 
-        setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+        if (!action) {
+            setUploadImageURL(newChangeImage);
+
+            setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+        }
     };
 
     const searchMap = async () => {
@@ -168,8 +262,14 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
     //submit form
     const onSubmit = async (data: unknown) => {
         console.log(data);
-        if (!files) {
+        if (changeImage.includes('')) {
+            console.log('Chưa có ảnh', changeImage);
             toast.error('Chưa chọn ảnh!');
+            setError('Bạn chưa cung cấp đầy đủ ảnh!');
+            return;
+        }
+        if (inputRef.current?.value !== captcha) {
+            setError('Captcha không hợp lệ. Mời nhập lại!');
             return;
         }
         if (action) {
@@ -404,12 +504,18 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                                                 key={child._id}
                                             >
                                                 <div
-                                                    onClick={() =>
-                                                        addRoomIntoCategory(
-                                                            child._id,
-                                                            category._id
-                                                        )
-                                                    }
+                                                    onClick={() => {
+                                                        if (action) {
+                                                            addRoommateIntoCategory(
+                                                                child._id,
+                                                                category._id
+                                                            );
+                                                        } else {
+                                                            addRoommateIntoCategoryEdit(
+                                                                child._id
+                                                            );
+                                                        }
+                                                    }}
                                                     className={`px-2 rounded-[10px] py-1 border-[1px] transition-colors cursor-pointer duration-300
                                                             ${
                                                                 childCateId.includes(
@@ -431,8 +537,62 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                     </div>
                     <div className="mt-3">
                         <label className="roboto-bold">Yêu cầu:</label>
+                        <div className="flex items-center ml-12">
+                            <span className="roboto-bold">Giới tính: </span>
+                            <div className="flex items-center ml-2">
+                                <input
+                                    type="radio"
+                                    {...register('gender', { required: true })}
+                                    value="Nam"
+                                    name="gender"
+                                />
+                                <label className="ml-1">Nam</label>
+                            </div>
+                            <div className="flex items-center ml-2">
+                                <input
+                                    type="radio"
+                                    {...register('gender', { required: true })}
+                                    value="Nữ"
+                                    name="gender"
+                                />
+                                <label className="ml-1">Nữ</label>
+                            </div>
+                            <label className="ml-10">Tuổi: Từ</label>
+                            <NumericFormat
+                                value={watch('min')}
+                                onValueChange={(values) => {
+                                    const { value } = values;
+                                    setValue('min', Number(value), {
+                                        shouldValidate: true,
+                                    });
+                                }}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                allowNegative={false}
+                                className="max-w-[5rem] border-b-2 ml-1 text-center outline-none"
+                            />
+                            <span className="px-1">đến</span>
+                            <NumericFormat
+                                value={watch('max')}
+                                onValueChange={(values) => {
+                                    const { value } = values;
+                                    setValue('max', Number(value), {
+                                        shouldValidate: true,
+                                    });
+                                }}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                allowNegative={false}
+                                className="max-w-[5rem] border-b-2 ml-1 text-center outline-none"
+                            />
+                        </div>
+
+                        <label className="roboto-bold  mt-3">
+                            Yêu cầu khác:
+                        </label>
+
                         <textarea
-                            {...register('require', { required: true })}
+                            {...register('other')}
                             name="require"
                             className="w-full min-h-[10rem] border-2 rounded"
                         ></textarea>
@@ -453,46 +613,80 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                                 vệ sinh, chỗ nấu ăn nếu có, đường ngõ liền kề )
                             </p>
                         </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleImageChange}
-                            ref={uploadImage}
-                        />
                         <div className="flex items-center">
-                            <div className="grid grid-cols-5 gap-2 mt-1">
-                                {changeImage.map((file, index) => (
+                            <div className="grid grid-cols-4 w-full gap-2 mt-1">
+                                {Array.from({ length: 5 }).map((_, index) => (
                                     <div
                                         className="col-span-1 relative"
                                         key={index}
                                     >
-                                        <Image
-                                            src={file}
-                                            alt=""
-                                            width={100}
-                                            height={100}
-                                            className="w-[10rem] h-[10rem] rounded-[10px] "
-                                        ></Image>
-                                        <IoCloseCircleOutline
-                                            onClick={() =>
-                                                handleRemoveImage(index)
+                                        {changeImage[index] ? (
+                                            <>
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <div className="relative">
+                                                        <Image
+                                                            src={
+                                                                changeImage[
+                                                                    index
+                                                                ]
+                                                            }
+                                                            alt={`image-${index}`}
+                                                            width={100}
+                                                            height={100}
+                                                            className="w-[10rem] h-[10rem] rounded-[10px]"
+                                                        />
+                                                        <IoCloseCircleOutline
+                                                            onClick={() =>
+                                                                handleRemoveImage(
+                                                                    index
+                                                                )
+                                                            }
+                                                            className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
+                                                        />
+                                                    </div>
+                                                    <p className="text-center">
+                                                        {captions[index]}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center">
+                                                <div
+                                                    onClick={() => {
+                                                        if (
+                                                            uploadImage.current[
+                                                                index
+                                                            ]
+                                                        ) {
+                                                            uploadImage.current[
+                                                                index
+                                                            ].click();
+                                                        }
+                                                    }}
+                                                    className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
+                                                >
+                                                    <FiPlus />
+                                                </div>
+                                                <p className="text-center">
+                                                    {captions[index]}
+                                                </p>
+                                            </div>
+                                        )}
+                                        <input
+                                            key={index}
+                                            type="file"
+                                            ref={(el) =>
+                                                (uploadImage.current[index] =
+                                                    el)
                                             }
-                                            className="absolute top-0 right-0 rounded-full bg-white text-[1.3rem]"
+                                            onChange={(e) =>
+                                                handleImageChange(e, index)
+                                            }
+                                            className="hidden"
+                                            accept="image/*"
                                         />
                                     </div>
                                 ))}
-                                <div
-                                    onClick={() => {
-                                        if (uploadImage.current) {
-                                            uploadImage.current.click();
-                                        }
-                                    }}
-                                    className="border-2 w-[10rem] h-[10rem] rounded-[10px] flex items-center justify-center border-dashed text-[2rem]"
-                                >
-                                    <FiPlus />
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -537,6 +731,39 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                             </div>
                         )}
                     </div>
+                    <div className="mt-3">
+                        <div className="border-2 border-dotted w-full h-[5rem]">
+                            <canvas
+                                ref={canvasRef}
+                                className="w-full h-full"
+                                width="200"
+                                height="50"
+                            ></canvas>
+                        </div>
+                        <div className="flex w-full">
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                placeholder="Xin hãy nhập captcha"
+                                className="px-2 py-1 border-black border w-full text-center"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsRoting(true);
+                                    drawCaptcha();
+                                    setTimeout(() => {
+                                        setIsRoting(false);
+                                    }, 1000);
+                                }}
+                                className="px-2 py-1 text-white bg-blue-500 h-"
+                            >
+                                <TfiReload
+                                    className={`${isRoting ? 'spin' : ''}`}
+                                />
+                            </button>
+                        </div>
+                    </div>
                     <button
                         type="submit"
                         className="px-2 py-1 rounded-[10px] bg-rootColor hover:bg-[#699ba3] text-white mt-3"
@@ -545,7 +772,6 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                     </button>
                 </form>
             </div>
-            <Toaster position="top-right" />
         </div>
     );
 };

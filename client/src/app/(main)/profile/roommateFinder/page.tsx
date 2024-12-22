@@ -4,7 +4,12 @@ import { MdAddBox, MdOutlinePayment } from 'react-icons/md';
 import PostFindMate from '@/components/postFindMate';
 import { useUser } from '@/store/userData';
 import { Roommate } from '@/schema/Roommate';
-import { checkOut, getRoommatePersonal, updateCheckout } from '@/api/api';
+import {
+    checkOut,
+    deleteRoommatePersonal,
+    getRoommatePersonal,
+    updateCheckout,
+} from '@/api/api';
 import {
     FaCamera,
     FaSortAmountDown,
@@ -12,7 +17,7 @@ import {
     FaSpinner,
     FaTrash,
 } from 'react-icons/fa';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
 import { FaPencil } from 'react-icons/fa6';
@@ -108,6 +113,18 @@ function RoommateFinderPage() {
     };
 
     const sortedRoommates = getSortedRoommates();
+    const deleteRoom = (roomId: string) => {
+        console.log('delete room:', roomId);
+        const deleteData = async () => {
+            const response = await deleteRoommatePersonal(roomId);
+            if (response) {
+                toast.success('Xoá phòng thành công!');
+            } else {
+                toast.success('Xoá phòng thất bại');
+            }
+        };
+        deleteData();
+    };
 
     const handleCheckout = async (roomId: string, type: boolean) => {
         const response = await checkOut({ roomId, type });
@@ -222,7 +239,7 @@ function RoommateFinderPage() {
                         </button>
                     )}
                     <Link
-                        href={'/profile/TrashRoom'}
+                        href={'/profile/trashRoommate'}
                         className="block ml-2 hover:text-rootColor"
                     >
                         <FaTrash />
@@ -300,7 +317,7 @@ function RoommateFinderPage() {
                                         )}
 
                                         <button
-                                            onClick={() => {}}
+                                            onClick={() => deleteRoom(room._id)}
                                             className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white"
                                         >
                                             <FaTrash />

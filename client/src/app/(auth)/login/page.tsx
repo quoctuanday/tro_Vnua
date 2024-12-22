@@ -98,10 +98,23 @@ function LoginPage() {
                         Đăng nhập
                     </button>
                     <div className="mt-2 pb-[1.3rem]">
-                        <p className="inline text-[#ccc]">
-                            Chưa có tài khoản?{' '}
-                        </p>
-                        <Link href={'/register'}>Đăng ký ngay!</Link>
+                        <div>
+                            <p className="inline text-[#ccc]">
+                                Chưa có tài khoản?{' '}
+                            </p>
+                            <Link
+                                className="hover:underline hover:text-blue-400"
+                                href={'/register'}
+                            >
+                                Đăng ký ngay!
+                            </Link>
+                        </div>
+                        <Link
+                            className="hover:underline hover:text-blue-400"
+                            href={'/home'}
+                        >
+                            Tham gia với tư cách khách!
+                        </Link>
                     </div>
                 </form>
             </div>

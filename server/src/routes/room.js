@@ -22,7 +22,7 @@ router.put(
     authorization(['admin', 'moderator']),
     roomController.update
 );
-router.get('/getAllRooms', authenticateToken, roomController.getAllRooms);
+router.get('/getAllRooms', roomController.getAllRooms);
 //For personal user
 router.put(
     '/updateRoomPersonal',

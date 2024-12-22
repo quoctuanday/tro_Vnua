@@ -17,24 +17,27 @@ export default function MainLayout({
     const [isFavouriteBox, setIsFavouriteBox] = useState(false);
     useEffect(() => {
         setIsClient(true);
-        const fetchData = async () => {
-            try {
-                const response = await getUser();
-                if (response) {
-                    console.log(response.data);
-                    const userData = JSON.stringify(response.data);
-                    localStorage.setItem('userLoginData', userData);
-                    const storedUser = localStorage.getItem('userLoginData');
-                    if (storedUser) {
-                        setUserLoginData(JSON.parse(storedUser));
+        if (userLoginData) {
+            const fetchData = async () => {
+                try {
+                    const response = await getUser();
+                    if (response) {
+                        console.log(response.data);
+                        const userData = JSON.stringify(response.data);
+                        localStorage.setItem('userLoginData', userData);
+                        const storedUser =
+                            localStorage.getItem('userLoginData');
+                        if (storedUser) {
+                            setUserLoginData(JSON.parse(storedUser));
+                        }
                     }
+                } catch (error) {
+                    console.log(error);
                 }
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        fetchData();
-    }, [setUserLoginData]);
+            };
+            fetchData();
+        }
+    }, [setUserLoginData, userLoginData]);
     if (!isClient) {
         return null;
     }

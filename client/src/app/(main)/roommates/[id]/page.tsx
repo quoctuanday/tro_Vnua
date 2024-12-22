@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createComment, getAllRooms, getComment } from '@/api/api';
-import { Room } from '@/schema/room';
+import { createComment, getAllRoommates, getComment } from '@/api/api';
 import { Comments } from '@/schema/Comment';
 import dateConvert from '@/utils/convertDate';
 import Image from 'next/image';
@@ -11,10 +10,11 @@ import { FaRegStar, FaStar } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import CustomerMap from '@/components/Map';
+import { Roommate } from '@/schema/Roommate';
 import Link from 'next/link';
 
 interface Comment {
-    roomId: string;
+    roommateId: string;
     content: string;
     rate: number;
 }
@@ -23,20 +23,20 @@ type Coordinates = {
     longitude: number;
 } | null;
 
-function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
+function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { socket, userLoginData } = useUser();
     const [userComment, setUserComment] = useState<Comments | null>(null);
     const [comment, setComment] = useState<Comments[]>([]);
     const { register, handleSubmit, control, reset } = useForm<Comment>();
-    const [roomId, setRoomId] = useState('');
-    const [roomDetail, setRoomDetail] = useState<Room | null>(null);
+    const [roommateId, setRoommateId] = useState('');
+    const [roommateDetail, setRoommateDetail] = useState<Roommate | null>(null);
     const [coord, setCoord] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchRoomDetail = async () => {
+        const fetchRoommateDetail = async () => {
             try {
                 setLoading(true);
 
@@ -47,21 +47,21 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     setError('Không tìm thấy ID phòng.');
                     return;
                 }
-                setRoomId(id);
+                setRoommateId(id);
 
-                const response = await getAllRooms();
+                const response = await getAllRoommates();
 
                 if (response && response.data) {
-                    const data = response.data.formattedRooms;
-                    const availableRooms = data.filter(
-                        (room: Room) => room.isAvailable
+                    const data = response.data.formattedRoommates;
+                    const availableRoommates = data.filter(
+                        (roommate: Roommate) => roommate.isAvailable
                     );
-                    const room = availableRooms.find(
-                        (room: Room) => room._id === id
+                    const roommate = availableRoommates.find(
+                        (roommate: Roommate) => roommate._id === id
                     );
 
-                    if (room) {
-                        setRoomDetail(room);
+                    if (roommate) {
+                        setRoommateDetail(roommate);
                     } else {
                         setError('Phòng không tìm thấy.');
                     }
@@ -75,23 +75,26 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 setLoading(false);
             }
         };
-        fetchRoomDetail();
+        fetchRoommateDetail();
 
         const getComments = async () => {
             const resolvedParams = await params;
             const { id } = resolvedParams;
-            const response = await getComment(id, true);
-            if (response) {
-                console.log(response.data.comment);
-                setComment(response.data.comment);
+            const response = await getComment(id, false);
+            if (response && response.data.comment) {
+                const data = response.data.comment;
+                const filcomment = data.filter(
+                    (prev: Comments) => prev.roommateId
+                );
+                setComment(filcomment);
             }
         };
         getComments();
 
         if (!socket) return;
-        socket.on('room-update', () => {
-            console.log('Room updated');
-            fetchRoomDetail();
+        socket.on('roommate-update', () => {
+            console.log('Roommate updated');
+            fetchRoommateDetail();
         });
         socket.on('comment-update', () => {
             getComments();
@@ -117,10 +120,10 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     };
 
     const onSubmit = async (data: Comment) => {
-        data.roomId = roomId;
+        data.roommateId = roommateId;
         console.log(data);
 
-        const response = await createComment({ data, type: true });
+        const response = await createComment({ data, type: false });
         if (response) {
             toast.success('Bình luận thành công!');
             reset();
@@ -135,7 +138,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
         return <div className="text-center text-lg text-red-500">{error}</div>;
     }
 
-    if (!roomDetail) {
+    if (!roommateDetail) {
         return (
             <div className="text-center text-lg">
                 Không có dữ liệu để hiển thị.
@@ -147,19 +150,19 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
         <div className="grid grid-cols-3 roboto-regular p-3 bg-white rounded-lg shadow-md">
             <div className="col-span-2 w-full  pr-6">
                 <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-                    {roomDetail.title}
+                    {roommateDetail.title}
                 </h1>
 
                 <div className="mb-6">
-                    {Array.isArray(roomDetail.images) &&
-                    roomDetail.images.length > 0 ? (
+                    {Array.isArray(roommateDetail.images) &&
+                    roommateDetail.images.length > 0 ? (
                         <div className="grid grid-cols-2 gap-4">
-                            {roomDetail.images.map((image, index) => (
+                            {roommateDetail.images.map((image, index) => (
                                 <div key={index} className="relative">
                                     <Image
                                         src={image}
                                         alt={`Ảnh ${index + 1} của ${
-                                            roomDetail.title
+                                            roommateDetail.title
                                         }`}
                                         width={100}
                                         height={100}
@@ -181,21 +184,21 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 </div>
 
                 <div className="text-sm text-gray-600 space-y-2">
-                    <p>Ngày đăng: {dateConvert(roomDetail.createdAt)}</p>
+                    <p>Ngày đăng: {dateConvert(roommateDetail.createdAt)}</p>
                     <p>
                         Giá:{' '}
                         {new Intl.NumberFormat('vi-VN', {
                             style: 'currency',
                             currency: 'VND',
-                        }).format(roomDetail.price)}{' '}
+                        }).format(roommateDetail.price)}{' '}
                         /tháng
                     </p>
-                    <p>Diện tích: {roomDetail.acreage} m²</p>
-                    <p>Địa chỉ: {roomDetail.location.name}</p>
+                    <p>Diện tích: {roommateDetail.acreage} m²</p>
+                    <p>Địa chỉ: {roommateDetail.location.name}</p>
                 </div>
                 <CustomerMap
-                    latitude={roomDetail.location.coordinates.latitude}
-                    longitude={roomDetail.location.coordinates.longitude}
+                    latitude={roommateDetail.location.coordinates.latitude}
+                    longitude={roommateDetail.location.coordinates.longitude}
                     setCoord={setCoord}
                 />
 
@@ -203,9 +206,21 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     <h2 className="text-xl font-semibold text-gray-800">
                         Giới thiệu về phòng
                     </h2>
-                    <p className="text-lg mb-4 text-gray-700 whitespace-pre-line">
-                        {roomDetail.description}
+                    <h1 className="roboto-bold">Tiện nghi:</h1>
+                    <p className="whitespace-pre-line">
+                        {' '}
+                        {roommateDetail.convenience}
                     </p>
+                    <div className="flex items-center">
+                        <h1 className="roboto-bold">Yêu cầu:</h1>
+                        <p className=" text-gray-700 whitespace-pre-line ml-1">
+                            giới tính: {roommateDetail.require.gender}, độ tuổi:
+                            từ {roommateDetail.require.age.min} đến{' '}
+                            {roommateDetail.require.age.max}, số người{' '}
+                            {roommateDetail.numberOfPeople}.
+                        </p>
+                        <p className="  text-gray-700 whitespace-pre-line"></p>
+                    </div>
                 </div>
                 <div className="mt-3">
                     <h1 className="roboto-bold">Bình luận và đánh giá</h1>
@@ -392,13 +407,14 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     Thông tin chủ sở hữu
                 </h2>
                 <p>
-                    <strong>Chủ sở hữu:</strong> {roomDetail.ownerName}
+                    <strong>Chủ sở hữu:</strong> {roommateDetail.ownerName}
                 </p>
                 <p>
-                    <strong>Số điện thoại:</strong> {roomDetail.contactNumber}
+                    <strong>Số điện thoại:</strong>{' '}
+                    {roommateDetail.contactNumber}
                 </p>
                 <p>
-                    <strong>Email:</strong> {roomDetail.contactEmail}
+                    <strong>Email:</strong> {roommateDetail.contactEmail}
                 </p>
             </div>
 
@@ -426,4 +442,4 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     );
 }
 
-export default RoomDetailPage;
+export default RoommateDetailPage;

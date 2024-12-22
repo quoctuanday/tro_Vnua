@@ -9,7 +9,23 @@ class RoommateController {
         data.images = req.body.data.successfulUploads;
         data.urlSaveImages = req.body.data.folderPath;
         const location = data.location;
+        const gender = data.gender;
+        const min = data.min;
+        const max = data.max;
+        const other = data.other;
         delete data.location;
+        delete data.gender;
+        delete data.min;
+        delete data.max;
+        delete data.other;
+        data.require = {
+            gender: gender,
+            age: {
+                min: min,
+                max: max,
+            },
+            other: other,
+        };
         data.location = {
             name: location,
             coordinates: req.body.data.coords,
@@ -81,6 +97,63 @@ class RoommateController {
             });
     }
 
+    deleteRoommatePersonal(req, res, next) {
+        const roomId = req.params.roomId;
+        const userId = req.user.userId;
+        Roommate.delete({ _id: roomId, userId: userId })
+            .then(() => {
+                console.log('Delete room Ok!');
+                res.status(200).json({ message: 'Room deleted successfully' });
+            })
+            .catch((error) => {
+                console.log('error delete room: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    getDeleteRoommate(req, res, next) {
+        const userId = req.user.userId;
+        Roommate.findWithDeleted({ userId: userId, deleted: true })
+            .then((rooms) => {
+                console.log(rooms);
+                if (rooms) {
+                    res.status(200).json({
+                        message: 'List Roommate has been deleted',
+                        rooms,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.log('error list Roommate delete: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    restoreRoommatePersonal(req, res, next) {
+        const userId = req.user.userId;
+        const roomId = req.params.roomId;
+        Roommate.restore({ _id: roomId, userId: userId })
+            .then(() => {
+                console.log('Restore Roommate ok!');
+                res.status(200).json({ message: 'Roommate has been restore' });
+            })
+            .catch((error) => {
+                console.log('Error restore Roommate', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    forceDeleteRoommatePersonal(req, res, next) {
+        const roomId = req.params.roomId;
+        Roommate.deleteOne({ _id: roomId })
+            .then(() => {
+                res.status(200).json({
+                    message: 'Roommate has been force deleted ',
+                });
+            })
+            .catch((error) => {
+                console.log('error force delete: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+
     getAllRoommates(req, res) {
         Roommate.find()
             .populate('userId', 'userName')
@@ -133,7 +206,7 @@ class RoommateController {
                 }
 
                 const roomIds = favouriteRooms.map(
-                    (favourite) => favourite.roomId
+                    (favourite) => favourite.roommateId
                 );
 
                 return Roommate.find({ _id: { $in: roomIds } })

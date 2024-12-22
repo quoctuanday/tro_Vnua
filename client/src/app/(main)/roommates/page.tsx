@@ -1,10 +1,10 @@
 'use client';
 import {
-    addFavourite,
+    addFavouriteRoommate,
     getAllRoommates,
     getCategory,
-    getFavourites,
-    removeFavourite,
+    getFavouritesRoommate,
+    removeFavouriteRoommate,
 } from '@/api/api';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ import {
     FaStar,
     FaStarHalfAlt,
 } from 'react-icons/fa';
-import { Room } from '@/schema/room';
 import { IoSearch } from 'react-icons/io5';
 import { Category } from '@/schema/Category';
 import { MdKeyboardArrowRight } from 'react-icons/md';
@@ -25,39 +24,43 @@ import Link from 'next/link';
 import dateConvert from '@/utils/convertDate';
 import Pagination from '@/components/pagination';
 import { useUser } from '@/store/userData';
+import { Roommate } from '@/schema/Roommate';
 
-function RoommatePage() {
+function RoommatematePage() {
     const { socket } = useUser();
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [filterRooms, setFilterRooms] = useState<Room[]>([]);
+    const [roommates, setRoommates] = useState<Roommate[]>([]);
+    const [filterRoommates, setFilterRoommates] = useState<Roommate[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [listRoomId, setListRoomId] = useState<string[]>([]);
+    const [listRoommateId, setListRoommateId] = useState<string[]>([]);
     const [listChildCate, setListChildCate] = useState<string[]>([]);
-    const [numberOfRoom, setNumberOfRoom] = useState(0);
+    const [numberOfRoommate, setNumberOfRoommate] = useState(0);
     const [typeSort, setTypeSort] = useState<'Đề xuất' | 'Mới nhất'>('Đề xuất');
     const [isFavourite, setIsFavourite] = useState<string[]>([]);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const getRooms = async () => {
+        const getRoommates = async () => {
             const response = await getAllRoommates();
-            if (response) {
+            if (response && response.data.formattedRoommates) {
                 const data = response.data.formattedRoommates;
-                const availableRooms = data.filter(
-                    (room: Room) => room.isAvailable && room.isCheckout
+                const availableRoommates = data.filter(
+                    (roommate: Roommate) =>
+                        roommate.isAvailable && roommate.isCheckout
                 );
 
-                availableRooms.sort((a: Room, b: Room) => b.rate - a.rate);
-                setNumberOfRoom(availableRooms.length);
+                availableRoommates.sort(
+                    (a: Roommate, b: Roommate) => b.rate - a.rate
+                );
+                setNumberOfRoommate(availableRoommates.length);
 
-                setRooms(availableRooms);
-                setFilterRooms(availableRooms);
+                setRoommates(availableRoommates);
+                setFilterRoommates(availableRoommates);
             }
         };
-        const getFavouriteRooms = async () => {
-            const response = await getFavourites();
-            if (response) {
+        const getFavouriteRoommates = async () => {
+            const response = await getFavouritesRoommate();
+            if (response && response.data.roomIds) {
                 const data = response.data.roomIds;
                 console.log(data);
                 setIsFavourite(data);
@@ -65,40 +68,40 @@ function RoommatePage() {
         };
         const getCategories = async () => {
             const response = await getCategory();
-            if (response) {
+            if (response && response.data.category) {
                 const data = response.data.category;
                 setCategories(data);
             }
         };
-        getRooms();
-        getFavouriteRooms();
+        getRoommates();
+        getFavouriteRoommates();
         getCategories();
         if (!socket) return;
-        socket.on('roomFavourite-update', () => {
+        socket.on('roommateFavourite-update', () => {
             console.log('update favourite');
-            getFavouriteRooms();
+            getFavouriteRoommates();
         });
         socket.on('category-update', () => {
             getCategories();
         });
-        socket.on('room-update', () => {
-            getRooms();
+        socket.on('roommate-update', () => {
+            getRoommates();
         });
     }, [socket]);
 
-    const handleFavourite = async (roomId: string) => {
-        if (isFavourite.includes(roomId)) {
-            await removeFavourite(roomId);
+    const handleFavourite = async (roommateId: string) => {
+        if (isFavourite.includes(roommateId)) {
+            await removeFavouriteRoommate(roommateId);
         } else {
-            await addFavourite(roomId);
+            await addFavouriteRoommate(roommateId);
         }
     };
     const handleSearch = () => {
-        const searchResults = rooms.filter((room) => {
-            if (!room.title) return;
+        const searchResults = roommates.filter((roommate) => {
+            if (!roommate.title) return;
             if (!searchInputRef.current) return;
             const value = searchInputRef.current.value;
-            const matchTitle = room.title
+            const matchTitle = roommate.title
                 .toLowerCase()
                 .includes(value.toLowerCase());
 
@@ -107,20 +110,20 @@ function RoommatePage() {
         console.log(searchResults);
         if (searchResults.length > 0) {
             setCurrentPage(1);
-            setFilterRooms(searchResults);
+            setFilterRoommates(searchResults);
         } else {
-            setFilterRooms([]);
+            setFilterRoommates([]);
         }
         if (!searchInputRef.current) return;
         searchInputRef.current.value = '';
     };
 
-    const roomsPerPage = 5;
-    const totalRooms = filterRooms.length;
-    const totalPages = Math.ceil(totalRooms / roomsPerPage);
-    const startIndex = (currentPage - 1) * roomsPerPage;
-    const endIndex = startIndex + roomsPerPage;
-    const currentRooms = filterRooms.slice(startIndex, endIndex);
+    const roommatesPerPage = 5;
+    const totalRoommates = filterRoommates.length;
+    const totalPages = Math.ceil(totalRoommates / roommatesPerPage);
+    const startIndex = (currentPage - 1) * roommatesPerPage;
+    const endIndex = startIndex + roommatesPerPage;
+    const currentRoommates = filterRoommates.slice(startIndex, endIndex);
 
     return (
         <div className="pt-6">
@@ -130,7 +133,7 @@ function RoommatePage() {
                         Tìm bạn ở ghép
                     </h1>
                     <span className="">
-                        Có {numberOfRoom} tin đăng cho thuê.
+                        Có {numberOfRoommate} tin đăng cho thuê.
                     </span>
                     <div className="relative mt-[1rem]">
                         <input
@@ -151,9 +154,9 @@ function RoommatePage() {
                             <button
                                 onClick={() => {
                                     setTypeSort('Đề xuất');
-                                    setFilterRooms(
-                                        rooms.sort(
-                                            (a: Room, b: Room) =>
+                                    setFilterRoommates(
+                                        roommates.sort(
+                                            (a: Roommate, b: Roommate) =>
                                                 b.rate - a.rate
                                         )
                                     );
@@ -168,9 +171,9 @@ function RoommatePage() {
                             <button
                                 onClick={() => {
                                     setTypeSort('Mới nhất');
-                                    setFilterRooms(
-                                        rooms.sort(
-                                            (a: Room, b: Room) =>
+                                    setFilterRoommates(
+                                        roommates.sort(
+                                            (a: Roommate, b: Roommate) =>
                                                 new Date(
                                                     b.createdAt ?? 0
                                                 ).getTime() -
@@ -190,17 +193,17 @@ function RoommatePage() {
                         </div>
                     </div>
                     <div className="mt-3">
-                        {currentRooms.length === 0 && (
+                        {currentRoommates.length === 0 && (
                             <div className="flex items-center justify-center text-red-400 mt-4">
                                 <span>Không có phòng nào!</span>
                             </div>
                         )}
-                        {currentRooms.map((room) => {
-                            const images = room.images.slice(0, 4);
+                        {currentRoommates.map((roommate) => {
+                            const images = roommate.images.slice(0, 4);
                             return (
                                 <div
                                     className="bg-white p-4 first:mt-0 mt-3 rounded shadow-custom-light grid grid-rows-3"
-                                    key={room._id}
+                                    key={roommate._id}
                                 >
                                     <div className="relative row-span-2 overflow-hidden grid h-full max-h-[300px] grid-cols-2 grid-rows-2 rounded">
                                         {Array.isArray(images) &&
@@ -221,16 +224,16 @@ function RoommatePage() {
                                         <div className="absolute left-[1%] bottom-[2%] p-1 bg-black opacity-50 text-white rounded flex items-center">
                                             <FaCamera />
                                             <span className="ml-1">
-                                                {room.images.length}
+                                                {roommate.images.length}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="row-span-1 ">
                                         <Link
-                                            href={`/rooms/${room._id}`}
+                                            href={`/roommates/${roommate._id}`}
                                             className="mt-2 roboto-bold text-[1.2rem] hover:underline text-blue-500 "
                                         >
-                                            {room.title}
+                                            {roommate.title}
                                         </Link>
                                         <div className="flex items-center mt-1">
                                             {Array.from({ length: 5 }).map(
@@ -238,7 +241,7 @@ function RoommatePage() {
                                                     if (
                                                         index <
                                                         Math.floor(
-                                                            room.rate || 0
+                                                            roommate.rate || 0
                                                         )
                                                     ) {
                                                         return (
@@ -250,10 +253,11 @@ function RoommatePage() {
                                                     } else if (
                                                         index <
                                                             Math.floor(
-                                                                room.rate || 0
+                                                                roommate.rate ||
+                                                                    0
                                                             ) +
                                                                 1 &&
-                                                        room.rate % 1 >= 0.5
+                                                        roommate.rate % 1 >= 0.5
                                                     ) {
                                                         return (
                                                             <FaStarHalfAlt
@@ -272,19 +276,40 @@ function RoommatePage() {
                                                 }
                                             )}
                                         </div>
-                                        <div className="flex items-center">
-                                            <span className="text-rootColor roboto-bold">
-                                                {Currency(room.price, 'vi-VN')}
+                                        <div className="flex items-center text-rootColor roboto-bold">
+                                            <span>Yêu cầu:</span>
+                                            <span className="ml-1">
+                                                Giới tính:{' '}
+                                                {roommate.require.gender},
+                                            </span>
+                                            <span className="ml-1">
+                                                {' '}
+                                                độ tuổi: từ{' '}
+                                                {
+                                                    roommate.require.age.min
+                                                } đến {roommate.require.age.max}
+                                                ,
+                                            </span>
+
+                                            <span className=" ml-1">
+                                                {' '}
+                                                tiền thuê:
+                                                {Currency(
+                                                    roommate.price,
+                                                    'vi-VN'
+                                                )}
                                                 /tháng
                                             </span>
                                             <span className="ml-2">
-                                                {room.acreage}m&sup2;{' '}
+                                                {roommate.acreage}m&sup2;{' '}
                                             </span>
-                                            {isFavourite.includes(room._id) ? (
+                                            {isFavourite.includes(
+                                                roommate._id
+                                            ) ? (
                                                 <button
                                                     onClick={() =>
                                                         handleFavourite(
-                                                            room._id
+                                                            roommate._id
                                                         )
                                                     }
                                                     className="ml-2 text-red-500"
@@ -295,7 +320,7 @@ function RoommatePage() {
                                                 <button
                                                     onClick={() =>
                                                         handleFavourite(
-                                                            room._id
+                                                            roommate._id
                                                         )
                                                     }
                                                     className="ml-2"
@@ -306,14 +331,14 @@ function RoommatePage() {
                                         </div>
 
                                         <p className="mt-1  line-clamp-2 w-full">
-                                            {room.description}
+                                            {roommate.description}
                                         </p>
                                         <span className="line-clamp-1 roboto-bold">
-                                            Địa chỉ: {room.location.name}
+                                            Địa chỉ: {roommate.location.name}
                                         </span>
                                         <span>
                                             Ngày đăng{' '}
-                                            {dateConvert(room.createdAt)}
+                                            {dateConvert(roommate.createdAt)}
                                         </span>
                                     </div>
                                 </div>
@@ -371,8 +396,8 @@ function RoommatePage() {
                                                             updatedList.length ===
                                                             0
                                                         ) {
-                                                            setFilterRooms(
-                                                                rooms
+                                                            setFilterRoommates(
+                                                                roommates
                                                             );
                                                         }
 
@@ -383,16 +408,16 @@ function RoommatePage() {
                                                             child._id
                                                         )
                                                     ) {
-                                                        setListRoomId(
+                                                        setListRoommateId(
                                                             (prev) => [
                                                                 ...prev,
-                                                                ...(child.roomId ||
+                                                                ...(child.roommateId ||
                                                                     []),
                                                             ]
                                                         );
                                                         const newList = [
-                                                            ...listRoomId,
-                                                            ...(child.roomId ||
+                                                            ...listRoommateId,
+                                                            ...(child.roommateId ||
                                                                 []),
                                                         ];
 
@@ -401,18 +426,18 @@ function RoommatePage() {
                                                                 new Set(newList)
                                                             );
 
-                                                        const selectRoom =
-                                                            rooms.filter(
-                                                                (room) =>
+                                                        const selectRoommate =
+                                                            roommates.filter(
+                                                                (roommate) =>
                                                                     childSelect.includes(
-                                                                        room._id
+                                                                        roommate._id
                                                                     )
                                                             );
-                                                        setFilterRooms(
-                                                            selectRoom
+                                                        setFilterRoommates(
+                                                            selectRoommate
                                                         );
                                                     } else {
-                                                        if (child.roomId) {
+                                                        if (child.roommateId) {
                                                             const filteredChildCate =
                                                                 listChildCate.filter(
                                                                     (
@@ -447,7 +472,7 @@ function RoommatePage() {
                                                                                 .length >
                                                                             0
                                                                     );
-                                                            const allRoomIds =
+                                                            const allRoommateIds =
                                                                 listChildCategory.flatMap(
                                                                     (
                                                                         category
@@ -456,15 +481,17 @@ function RoommatePage() {
                                                                             (
                                                                                 child
                                                                             ) =>
-                                                                                child.roomId ||
+                                                                                child.roommateId ||
                                                                                 []
                                                                         )
                                                                 );
-                                                            setFilterRooms(
-                                                                rooms.filter(
-                                                                    (room) =>
-                                                                        allRoomIds.includes(
-                                                                            room._id
+                                                            setFilterRoommates(
+                                                                roommates.filter(
+                                                                    (
+                                                                        roommate
+                                                                    ) =>
+                                                                        allRoommateIds.includes(
+                                                                            roommate._id
                                                                         )
                                                                 )
                                                             );
@@ -491,4 +518,4 @@ function RoommatePage() {
     );
 }
 
-export default RoommatePage;
+export default RoommatematePage;
