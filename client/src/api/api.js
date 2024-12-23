@@ -166,3 +166,9 @@ export const getComment = (id, type) =>
 export const checkOut = (data) => api.post('/payment/vnpay/create', { data });
 export const updateCheckout = (query, data) =>
     api.put(`/payment/vnpay/callback?${query}`, { data });
+
+//admin
+export const getCount = (start, end) =>
+    api.get(`/admin/getCount?start=${start}&end=${end}`);
+export const getRevenue = (start, end) =>
+    api.get(`/admin/getRevenue?start=${start}&end=${end}`);

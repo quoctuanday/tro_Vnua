@@ -106,12 +106,12 @@ function SidebarAdmin() {
                         Quản lí danh mục
                     </Link>
                     <Link
-                        href={'/admin/statistics'}
+                        href={'/admin'}
                         className={`${
-                            active == '/admin/statistics' && 'text-rootColor'
+                            active == '/admin' && 'text-rootColor'
                         } hover:text-rootColor mt-2 cursor-pointer flex items-center`}
                         onClick={() => {
-                            handleClickPath('/admin/statistics');
+                            handleClickPath('/admin');
                         }}
                     >
                         <LuAlignEndHorizontal className="pr-1" />

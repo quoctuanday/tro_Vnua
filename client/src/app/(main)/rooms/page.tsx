@@ -21,10 +21,11 @@ import { IoSearch } from 'react-icons/io5';
 import { Category } from '@/schema/Category';
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import Currency from '@/utils/convertCurrency';
+import formatTimeDifference from '@/utils/formatTime';
 import Link from 'next/link';
-import dateConvert from '@/utils/convertDate';
 import Pagination from '@/components/pagination';
 import { useUser } from '@/store/userData';
+import dateConvert from '@/utils/convertDate';
 
 function ListRoomPage() {
     const { socket } = useUser();
@@ -312,7 +313,11 @@ function ListRoomPage() {
                                             Địa chỉ: {room.location.name}
                                         </span>
                                         <span>
-                                            Ngày đăng{' '}
+                                            Đã đăng{' '}
+                                            {formatTimeDifference(
+                                                room.createdAt
+                                            )}
+                                            , thời gian đăng:{' '}
                                             {dateConvert(room.createdAt)}
                                         </span>
                                     </div>

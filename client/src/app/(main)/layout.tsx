@@ -1,6 +1,7 @@
 'use client';
 import { getUser } from '@/api/api';
 import FavoriteBox from '@/components/favoritebox';
+import FooterPage from '@/components/footer';
 import { useUser } from '@/store/userData';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,27 +18,23 @@ export default function MainLayout({
     const [isFavouriteBox, setIsFavouriteBox] = useState(false);
     useEffect(() => {
         setIsClient(true);
-        if (userLoginData) {
+        const token = localStorage.getItem('token');
+        if (token) {
             const fetchData = async () => {
-                try {
-                    const response = await getUser();
-                    if (response) {
-                        console.log(response.data);
-                        const userData = JSON.stringify(response.data);
-                        localStorage.setItem('userLoginData', userData);
-                        const storedUser =
-                            localStorage.getItem('userLoginData');
-                        if (storedUser) {
-                            setUserLoginData(JSON.parse(storedUser));
-                        }
+                const response = await getUser();
+                if (response) {
+                    console.log(response.data);
+                    const userData = JSON.stringify(response.data);
+                    localStorage.setItem('userLoginData', userData);
+                    const storedUser = localStorage.getItem('userLoginData');
+                    if (storedUser) {
+                        setUserLoginData(JSON.parse(storedUser));
                     }
-                } catch (error) {
-                    console.log(error);
                 }
             };
             fetchData();
         }
-    }, [setUserLoginData, userLoginData]);
+    }, [setUserLoginData]);
     if (!isClient) {
         return null;
     }
@@ -135,6 +132,7 @@ export default function MainLayout({
             </div>
             <div className="bg-[#efefef3f] px-[13rem]">{children}</div>
             <div className="pt-[5rem] w-full bg-[#efefef3f]"></div>
+            <FooterPage />
         </div>
     );
 }

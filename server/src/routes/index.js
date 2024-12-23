@@ -5,8 +5,10 @@ const categoryRouter = require('./category');
 const roommateRouter = require('./roommate');
 const commentRouter = require('./comment');
 const paymentRouter = require('./payment');
+const adminRouter = require('./admin');
 
 function route(app) {
+    app.use('/api/admin', adminRouter);
     app.use('/api/payment', paymentRouter);
     app.use('/api/comments', commentRouter);
     app.use('/api/roommate', roommateRouter);

@@ -18,6 +18,7 @@ import {
 import InfoRoom from '@/components/infoRoom';
 
 type Status = 'both' | 'available' | 'unavailable';
+type Checkout = 'both' | 'available' | 'unavailable';
 type Time = 'week' | 'month' | 'year' | 'specificTime' | null;
 function ManagePostPage() {
     const searchRef = useRef<HTMLInputElement>(null);
@@ -29,6 +30,7 @@ function ManagePostPage() {
     const [isRotating, setIsRotating] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<Status>('both');
+    const [selectedCheckout, setSelectedCheckout] = useState<Checkout>('both');
     const [selectedTime, setSelectedTime] = useState<Time>(null);
     const [specificTimeValue, setSpecificTimeValue] = useState('');
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -82,6 +84,11 @@ function ManagePostPage() {
             prevStatus === status ? 'both' : status
         );
     };
+    const handleCheckoutClick = (checkout: Checkout) => {
+        setSelectedCheckout((prevcheckout) =>
+            prevcheckout === checkout ? 'both' : checkout
+        );
+    };
     const handleTimeClick = (status: Time) => {
         setSelectedTime((prevStatus) =>
             prevStatus === status ? null : status
@@ -100,6 +107,22 @@ function ManagePostPage() {
                 case 'unavailable':
                     filtResult = rooms.filter((room) => {
                         return room.isAvailable === false;
+                    });
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (selectedCheckout && selectedCheckout !== 'both') {
+            switch (selectedCheckout) {
+                case 'available':
+                    filtResult = rooms.filter((room) => {
+                        return room.isCheckout === true;
+                    });
+                    break;
+                case 'unavailable':
+                    filtResult = rooms.filter((room) => {
+                        return room.isCheckout === false;
                     });
                     break;
                 default:
@@ -277,6 +300,42 @@ function ManagePostPage() {
                                     }}
                                     className={`border-2 ml-3 rounded-[10px] px-2 py-1 transition-colors duration-300 ${
                                         selectedStatus === 'both' &&
+                                        'bg-rootColor text-white'
+                                    }`}
+                                >
+                                    Cả hai
+                                </button>
+                            </div>
+                            <h1>Thanh toán</h1>
+                            <div className="mt-2 flex items-center">
+                                <button
+                                    onClick={() => {
+                                        handleCheckoutClick('unavailable');
+                                    }}
+                                    className={`border-2 rounded-[10px] px-2 py-1 transition-colors duration-300 ${
+                                        selectedCheckout === 'unavailable' &&
+                                        'bg-rootColor text-white'
+                                    }`}
+                                >
+                                    Chưa thanh toán
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleCheckoutClick('available');
+                                    }}
+                                    className={`border-2 ml-3 rounded-[10px] px-2 py-1 transition-colors duration-300 ${
+                                        selectedCheckout === 'available' &&
+                                        'bg-rootColor text-white'
+                                    }`}
+                                >
+                                    Đã thanh toán
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleCheckoutClick('both');
+                                    }}
+                                    className={`border-2 ml-3 rounded-[10px] px-2 py-1 transition-colors duration-300 ${
+                                        selectedCheckout === 'both' &&
                                         'bg-rootColor text-white'
                                     }`}
                                 >

@@ -25,6 +25,7 @@ import dateConvert from '@/utils/convertDate';
 import Pagination from '@/components/pagination';
 import { useUser } from '@/store/userData';
 import { Roommate } from '@/schema/Roommate';
+import formatTimeDifference from '@/utils/formatTime';
 
 function RoommatematePage() {
     const { socket } = useUser();
@@ -337,7 +338,11 @@ function RoommatematePage() {
                                             Địa chỉ: {roommate.location.name}
                                         </span>
                                         <span>
-                                            Ngày đăng{' '}
+                                            Đã đăng{' '}
+                                            {formatTimeDifference(
+                                                roommate.createdAt
+                                            )}
+                                            , thời gian đăng:{' '}
                                             {dateConvert(roommate.createdAt)}
                                         </span>
                                     </div>
