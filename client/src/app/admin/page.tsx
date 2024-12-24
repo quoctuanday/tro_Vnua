@@ -72,7 +72,9 @@ function Adminpage() {
                     className="flex items-center gap-4"
                 >
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Từ:</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                            Từ:
+                        </label>
                         <input
                             {...register('start', { required: true })}
                             type="date"
@@ -80,7 +82,9 @@ function Adminpage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Đến:</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                            Đến:
+                        </label>
                         <input
                             {...register('end', { required: true })}
                             type="date"
@@ -108,10 +112,19 @@ function Adminpage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div className="bg-gray-50 p-4 rounded-md shadow">
-                                <h3 className="text-lg font-semibold text-gray-800">Thống kê chung</h3>
-                                <p className="text-sm text-gray-600">Tổng số người dùng: {data.userCount}</p>
-                                <p className="text-sm text-gray-600">Tổng số tin tức: {data.newsCount}</p>
-                                <p className="text-sm text-gray-600">Tổng doanh thu: {Currency(data.totalRevenue)}</p>
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Thống kê chung
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                    Tổng số người dùng: {data.userCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Tổng số tin tức: {data.newsCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Tổng doanh thu:{' '}
+                                    {Currency(data.totalRevenue)}
+                                </p>
                             </div>
                             {start && end && (
                                 <div className="bg-gray-50 p-4 rounded-md shadow">
@@ -122,34 +135,53 @@ function Adminpage() {
 
                         <div className="space-y-4">
                             <div className="bg-gray-50 p-4 rounded-md shadow">
-                                <h3 className="text-lg font-semibold text-gray-800">Bài đăng thuê phòng</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Bài đăng thuê phòng
+                                </h3>
                                 <p className="text-sm text-gray-600">
-                                    Tổng số bài đăng: {data.roomCount.availableRoomCount + data.roomCount.unavailableRoomCount}
+                                    Tổng số bài đăng:{' '}
+                                    {data.roomCount.availableRoomCount +
+                                        data.roomCount.unavailableRoomCount}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Đã duyệt: {data.roomCount.availableRoomCount}
+                                    Đã duyệt:{' '}
+                                    {data.roomCount.availableRoomCount}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Chưa duyệt: {data.roomCount.unavailableRoomCount}
+                                    Chưa duyệt:{' '}
+                                    {data.roomCount.unavailableRoomCount}
                                 </p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-md shadow">
-                                <h3 className="text-lg font-semibold text-gray-800">Bài đăng tìm người ở ghép</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Bài đăng tìm người ở ghép
+                                </h3>
                                 <p className="text-sm text-gray-600">
-                                    Tổng số bài đăng: {data.roommateCount.availableRoommateCount + data.roommateCount.unavailableRoommateCount}
+                                    Tổng số bài đăng:{' '}
+                                    {data.roommateCount.availableRoommateCount +
+                                        data.roommateCount
+                                            .unavailableRoommateCount}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Đã duyệt: {data.roommateCount.availableRoommateCount}
+                                    Đã duyệt:{' '}
+                                    {data.roommateCount.availableRoommateCount}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                    Chưa duyệt: {data.roommateCount.unavailableRoommateCount}
+                                    Chưa duyệt:{' '}
+                                    {
+                                        data.roommateCount
+                                            .unavailableRoommateCount
+                                    }
                                 </p>
                             </div>
                         </div>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <FaSpinner className="animate-spin text-indigo-600" size={24} />
+                        <FaSpinner
+                            className="animate-spin text-indigo-600"
+                            size={24}
+                        />
                     </div>
                 )}
             </div>

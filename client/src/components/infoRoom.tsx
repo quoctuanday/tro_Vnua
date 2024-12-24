@@ -10,6 +10,13 @@ interface Props {
     setFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
     room: Room | null;
 }
+const captions = [
+    'Hình ảnh mặt tiền',
+    'Phòng ngủ',
+    'Nhà vệ sinh',
+    'Chỗ nấu ăn',
+    'Ngõ vào',
+];
 
 function InfoRoom({ setFormOpen, room }: Props) {
     const handleBrowse = () => {
@@ -51,23 +58,37 @@ function InfoRoom({ setFormOpen, room }: Props) {
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Chủ sở hữu:</span>
-                            <p className="ml-2 text-gray-700">{room?.ownerName}</p>
+                            <p className="ml-2 text-gray-700">
+                                {room?.ownerName}
+                            </p>
                         </div>
                         <div className="flex items-center">
-                            <span className="font-semibold">Số điện thoại liên hệ:</span>
-                            <p className="ml-2 text-gray-700">{room?.contactNumber}</p>
+                            <span className="font-semibold">
+                                Số điện thoại liên hệ:
+                            </span>
+                            <p className="ml-2 text-gray-700">
+                                {room?.contactNumber}
+                            </p>
                         </div>
                         <div className="flex items-center">
-                            <span className="font-semibold">Email liên hệ:</span>
-                            <p className="ml-2 text-gray-700">{room?.contactEmail}</p>
+                            <span className="font-semibold">
+                                Email liên hệ:
+                            </span>
+                            <p className="ml-2 text-gray-700">
+                                {room?.contactEmail}
+                            </p>
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Vị trí:</span>
-                            <p className="ml-2 text-gray-700">{room?.location.name}</p>
+                            <p className="ml-2 text-gray-700">
+                                {room?.location.name}
+                            </p>
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Diện tích:</span>
-                            <p className="ml-2 text-gray-700">{room?.acreage}</p>
+                            <p className="ml-2 text-gray-700">
+                                {room?.acreage}
+                            </p>
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Giá:</span>
@@ -75,7 +96,9 @@ function InfoRoom({ setFormOpen, room }: Props) {
                         </div>
                         <div>
                             <span className="font-semibold">Mô tả:</span>
-                            <p className="ml-2 text-gray-700">{room?.description}</p>
+                            <p className="ml-2 text-gray-700">
+                                {room?.description}
+                            </p>
                         </div>
 
                         {/* Images */}
@@ -92,6 +115,9 @@ function InfoRoom({ setFormOpen, room }: Props) {
                                                 height={100}
                                                 className="w-full max-h-[12rem] object-cover rounded-lg"
                                             />
+                                            <p className="text-center">
+                                                {captions[index]}
+                                            </p>
                                         </div>
                                     ))}
                             </div>

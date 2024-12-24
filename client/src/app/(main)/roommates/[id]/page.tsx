@@ -12,6 +12,7 @@ import { useUser } from '@/store/userData';
 import CustomerMap from '@/components/Map';
 import { Roommate } from '@/schema/Roommate';
 import Link from 'next/link';
+import Carousel from '@/components/carousel';
 
 interface Comment {
     roommateId: string;
@@ -33,7 +34,6 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [coord, setCoord] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchRoommateDetail = async () => {
@@ -110,15 +110,6 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
         }
     }, [comment, userLoginData]);
 
-    const openImageModal = (image: string) => {
-        setSelectedImage(image);
-    };
-
-    const closeImageModal = () => {
-        setSelectedImage(null);
-        console.log(coord);
-    };
-
     const onSubmit = async (data: Comment) => {
         data.roommateId = roommateId;
         console.log(data);
@@ -149,43 +140,14 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
     return (
         <div className="grid grid-cols-3 roboto-regular p-3 bg-white rounded-lg shadow-md">
             <div className="col-span-2 w-full  pr-6">
-<div className="mb-6">
-                    {Array.isArray(roommateDetail.images) && roommateDetail.images.length > 0 ? (
-                        <div>
-                            <div className="mb-4">
-                                <Image
-                                    src={selectedImage || roommateDetail.images[0]}  
-                                    alt={`Ảnh lớn của ${roommateDetail.title}`}
-                                    width={500}
-                                    height={500}
-                                    className="w-full h-auto rounded-lg object-cover"
-                                />
-                            </div>
-                            <div className="grid grid-cols-5 gap-4">
-                                {roommateDetail.images.map((image, index) => (
-                                    <div key={index} className="relative">
-                                        <Image
-                                            src={image}
-                                            alt={`Ảnh nhỏ ${index + 1} của ${roommateDetail.title}`}
-                                            width={100}
-                                            height={100}
-                                            className={`h-[5rem] w-auto rounded-lg cursor-pointer transition-transform transform hover:scale-105 ${selectedImage === image ? 'border-2 border-blue-500' : ''}`}
-                                            onClick={() => setSelectedImage(image)}  
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <Image
-                            src="/path/to/default-image.jpg"
-                            alt="Ảnh mặc định"
-                            width={500}
-                            height={500}
-                            className="w-full h-auto rounded-lg"
-                        />
-                    )}
-                </div>
+                <Carousel
+                    images={
+                        Array.isArray(roommateDetail.images)
+                            ? roommateDetail.images
+                            : []
+                    }
+                    title={roommateDetail.title}
+                />
 
                 <h1 className="text-3xl font-semibold mb-6 text-gray-800">
                     {roommateDetail.title}
@@ -193,9 +155,10 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
 
                 <div className="bg-white p-4 rounded-lg shadow-md space-y-4">
                     <p className="text-sm text-gray-600">
-                        <span className="font-semibold">Ngày đăng:</span> {dateConvert(roommateDetail.createdAt)}
+                        <span className="font-semibold">Ngày đăng:</span>{' '}
+                        {dateConvert(roommateDetail.createdAt)}
                     </p>
-                    
+
                     <div className="flex items-center space-x-3 text-base text-gray-600">
                         <p className="flex items-center space-x-1">
                             <span className="font-semibold">Giá:</span>
@@ -214,7 +177,8 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     </div>
 
                     <p className="text-base text-gray-600">
-                        <span className="font-semibold">Địa chỉ:</span> {roommateDetail.location.name}
+                        <span className="font-semibold">Địa chỉ:</span>{' '}
+                        {roommateDetail.location.name}
                     </p>
                 </div>
 
@@ -225,7 +189,9 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 />
 
                 <div className="my-6">
-                    <h2 className="text-xl font-semibold text-gray-800">Thông tin mô tả</h2>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                        Thông tin mô tả
+                    </h2>
 
                     {/* Tiện nghi */}
                     <div className="mt-4">
@@ -241,7 +207,10 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
 
                         <div className="text-gray-700 whitespace-pre-line ml-1 text-lg mt-2">
                             <p>Giới tính: {roommateDetail.require.gender}</p>
-                            <p>Độ tuổi: từ {roommateDetail.require.age.min} đến {roommateDetail.require.age.max}</p>
+                            <p>
+                                Độ tuổi: từ {roommateDetail.require.age.min} đến{' '}
+                                {roommateDetail.require.age.max}
+                            </p>
                             <p>Số người: {roommateDetail.numberOfPeople}</p>
                         </div>
                     </div>
@@ -428,11 +397,32 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
             </div>
 
             <div className="col-span-1 w-full bg-gray-50 p-6 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
-                <h2 className="text-2xl font-semibold text-gray-800">Thông tin chủ sở hữu</h2>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                    Thông tin chủ sở hữu
+                </h2>
                 <div className="text-lg text-gray-700 space-y-2">
-                    <p><strong className="font-bold">Chủ sở hữu:</strong> {roommateDetail.ownerName}</p>
-                    <p><strong className="font-bold">Số điện thoại:</strong> <a href={`tel:${roommateDetail.contactNumber}`} className="text-blue-600">{roommateDetail.contactNumber}</a></p>
-                    <p><strong className="font-bold">Email:</strong> <a href={`mailto:${roommateDetail.contactEmail}`} className="text-blue-600">{roommateDetail.contactEmail}</a></p>
+                    <p>
+                        <strong className="font-bold">Chủ sở hữu:</strong>{' '}
+                        {roommateDetail.ownerName}
+                    </p>
+                    <p>
+                        <strong className="font-bold">Số điện thoại:</strong>{' '}
+                        <a
+                            href={`tel:${roommateDetail.contactNumber}`}
+                            className="text-blue-600"
+                        >
+                            {roommateDetail.contactNumber}
+                        </a>
+                    </p>
+                    <p>
+                        <strong className="font-bold">Email:</strong>{' '}
+                        <a
+                            href={`mailto:${roommateDetail.contactEmail}`}
+                            className="text-blue-600"
+                        >
+                            {roommateDetail.contactEmail}
+                        </a>
+                    </p>
                 </div>
             </div>
 

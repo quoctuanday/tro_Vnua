@@ -6,6 +6,7 @@ import { Room } from '@/schema/room';
 import { News } from '@/schema/news';
 import Image from 'next/image';
 import Link from 'next/link';
+import AutoSlider from '@/components/autoSlider';
 
 function HomePage() {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -23,7 +24,7 @@ function HomePage() {
             ) {
                 const data = roomResponse.data.formattedRooms;
                 const availableRooms = data.filter(
-                    (room: Room) => room.isAvailable
+                    (room: Room) => room.isAvailable && room.isCheckout
                 );
                 const latestRooms = availableRooms
                     .sort((a: Room, b: Room) => {
@@ -100,12 +101,12 @@ function HomePage() {
 
             <section className="mb-8">
                 <h2 className="text-xl roboto-bold mb-4">Phòng trọ mới nhất</h2>
-                <div className="flex overflow-x-auto space-x-4">
-                    {rooms.map((room) => (
-                        <div
-                            key={room._id}
-                            className="flex-shrink-0 w-[280px] border p-4 rounded-lg"
-                        >
+                <AutoSlider<Room>
+                    items={rooms}
+                    itemWidth={280}
+                    speed={10}
+                    renderItem={(room) => (
+                        <div className="border p-4 rounded-lg">
                             <Image
                                 src={
                                     room.images[0] ||
@@ -132,47 +133,43 @@ function HomePage() {
                                 Xem chi tiết
                             </Link>
                         </div>
-                    ))}
-                </div>
+                    )}
+                />
             </section>
 
             <section>
                 <h2 className="text-xl roboto-bold mb-4">Tin tức mới nhất</h2>
-                <div className="flex overflow-x-auto space-x-4">
-                    {news.map((newsItem) => (
-                        <div
-                            key={newsItem._id}
-                            className="flex-shrink-0 w-[280px] border p-4 rounded-lg"
-                        >
+                <AutoSlider<News>
+                    items={news}
+                    itemWidth={280}
+                    speed={10}
+                    renderItem={(news) => (
+                        <div className="border p-4 rounded-lg h-full">
                             <Image
-                                src={
-                                    newsItem.image ||
-                                    '/path/to/default-image.jpg'
-                                }
-                                alt={newsItem.title}
+                                src={news.image || '/path/to/default-image.jpg'}
+                                alt={news.title}
                                 width={280}
                                 height={180}
                                 className="w-full h-[180px] rounded-lg"
                             />
                             <h3 className="text-lg roboto-bold mt-2">
                                 <Link
-                                    href={`/news/${newsItem._id}`}
+                                    href={`/news/${news._id}`}
                                     className="text-blue-500"
                                 >
-                                    {newsItem.title}
+                                    {news.title}
                                 </Link>
                             </h3>
                             <p
                                 className="text-sm text-gray-500"
                                 dangerouslySetInnerHTML={{
                                     __html:
-                                        newsItem.content.substring(0, 100) +
-                                        '...',
+                                        news.content.substring(0, 100) + '...',
                                 }}
                             />
                         </div>
-                    ))}
-                </div>
+                    )}
+                />
             </section>
         </div>
     );
