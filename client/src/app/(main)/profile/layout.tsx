@@ -116,7 +116,7 @@ export default function ProfileLayout({
     return (
         <div className="bg-[#efefef3f] h-full">
             <div className="grid grid-cols-6 gap-4 py-[1.3rem] ">
-                <div className="col-span-2 h-[20rem] ">
+                <div className="col-span-2 min-h-[20rem] ">
                     <div className="text-center border-b-[1px] pb-[1.3rem]">
                         <div className="flex justify-center relative">
                             <div className="relative">

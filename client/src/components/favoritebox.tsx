@@ -57,7 +57,7 @@ const FavoriteBox: React.FC<Props> = ({ setIsFavouriteBox }) => {
             </div>
             <div>
                 {type ? (
-                    <div>
+                    <div className='min-h-[15rem]'>
                         {rooms.length > 0 ? (
                             <div className="">
                                 {rooms.map((room) => (
@@ -101,7 +101,7 @@ const FavoriteBox: React.FC<Props> = ({ setIsFavouriteBox }) => {
                         )}
                     </div>
                 ) : (
-                    <div>
+                    <div className='min-h-[15rem]'>
                         {rooms.length > 0 ? (
                             <div className="">
                                 {rooms.map((room) => (

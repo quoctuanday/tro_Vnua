@@ -5,6 +5,7 @@ import Image from 'next/image';
 import React from 'react';
 import toast from 'react-hot-toast';
 import { IoClose } from 'react-icons/io5';
+
 interface Props {
     setFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
     room: Room | null;
@@ -22,87 +23,92 @@ function InfoRoom({ setFormOpen, room }: Props) {
         };
         browseRoom();
     };
+
     return (
-        <div className="fixed z-[999] top-0 left-0 bottom-0 right-0">
-            <div
-                onClick={() => setFormOpen(false)}
-                className="absolute top-0 left-0 bottom-0 right-0 opacity-50 bg-[#ccc]"
-            ></div>
+        <div className="fixed z-[999] top-0 left-0 bottom-0 right-0 bg-[#00000050]">
             <div className="relative h-[100vh] flex items-center justify-center">
-                <div className="w-[50rem] max-h-[40rem] overflow-y-auto p-3 bg-white rounded">
+                <div className="w-[50rem] max-h-[40rem] overflow-y-auto p-6 bg-white rounded-lg shadow-lg">
+                    {/* Close Button */}
                     <div className="flex items-center justify-end">
                         <button
                             onClick={() => setFormOpen(false)}
-                            className="text-[1.4rem] rounded  hover:bg-red-400 hover:text-white"
+                            className="text-[1.6rem] text-gray-600 hover:text-red-500"
                         >
                             <IoClose />
                         </button>
                     </div>
-                    <h1 className="text-center text-[1.6rem] roboto-bold">
+
+                    {/* Title */}
+                    <h1 className="text-center text-2xl font-bold text-gray-800 mb-4">
                         Thông tin phòng trọ
                     </h1>
-                    <div className="mt-2">
+
+                    {/* Room Information */}
+                    <div className="space-y-4">
                         <div className="flex items-center">
-                            <span className="roboto-bold">Tiêu đề: </span>
-                            <p className="ml-1">{room?.title}</p>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="roboto-bold">Chủ sở hữu: </span>
-                            <p className="ml-1">{room?.ownerName}</p>
+                            <span className="font-semibold">Tiêu đề:</span>
+                            <p className="ml-2 text-gray-700">{room?.title}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className="roboto-bold">
-                                Số điện thoại liên hệ:{' '}
-                            </span>
-                            <p className="ml-1">{room?.contactNumber}</p>
+                            <span className="font-semibold">Chủ sở hữu:</span>
+                            <p className="ml-2 text-gray-700">{room?.ownerName}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className="roboto-bold">Email liên hệ: </span>
-                            <p className="ml-1">{room?.contactEmail}</p>
-                        </div>
-                        <div className="">
-                            <span className="roboto-bold">Mô tả: </span>
-                            <p className="">{room?.description}</p>
+                            <span className="font-semibold">Số điện thoại liên hệ:</span>
+                            <p className="ml-2 text-gray-700">{room?.contactNumber}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className="roboto-bold">Vị trí: </span>
-                            <p className="ml-1">{room?.location.name}</p>
+                            <span className="font-semibold">Email liên hệ:</span>
+                            <p className="ml-2 text-gray-700">{room?.contactEmail}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className="roboto-bold">Diện tích: </span>
-                            <p className="ml-1">{room?.acreage}</p>
+                            <span className="font-semibold">Vị trí:</span>
+                            <p className="ml-2 text-gray-700">{room?.location.name}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className="roboto-bold">Giá: </span>
-                            <p className="ml-1">{room?.price}</p>
+                            <span className="font-semibold">Diện tích:</span>
+                            <p className="ml-2 text-gray-700">{room?.acreage}</p>
                         </div>
-                        <div className="">
-                            <span className="roboto-bold">Hình ảnh:</span>
-                            <div className="grid grid-cols-3">
+                        <div className="flex items-center">
+                            <span className="font-semibold">Giá:</span>
+                            <p className="ml-2 text-gray-700">{room?.price}</p>
+                        </div>
+                        <div>
+                            <span className="font-semibold">Mô tả:</span>
+                            <p className="ml-2 text-gray-700">{room?.description}</p>
+                        </div>
+
+                        {/* Images */}
+                        <div>
+                            <span className="font-semibold">Hình ảnh:</span>
+                            <div className="grid grid-cols-3 gap-2">
                                 {Array.isArray(room?.images) &&
                                     room?.images.map((image, index) => (
-                                        <div className="col-span-1" key={index}>
+                                        <div key={index}>
                                             <Image
-                                                src={image ? image : ''}
-                                                alt=""
+                                                src={image || ''}
+                                                alt={`Room image ${index + 1}`}
                                                 width={100}
                                                 height={100}
-                                                className="w-full max-h-[12rem]"
+                                                className="w-full max-h-[12rem] object-cover rounded-lg"
                                             />
                                         </div>
                                     ))}
                             </div>
                         </div>
                     </div>
+
+                    {/* Button to approve */}
                     <button
                         onClick={() => handleBrowse()}
-                        className={`mt-2 px-2 py-1 rounded-[10px] ${
+                        className={`mt-4 w-full py-2 px-4 rounded-md text-white ${
                             room?.isAvailable
-                                ? 'bg-[#ccc] text-[#999] cursor-not-allowed'
-                                : 'bg-rootColor hover:bg-[#699ba3] text-white'
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-blue-500 hover:bg-blue-600'
                         }`}
+                        disabled={room?.isAvailable}
                     >
-                        Duyệt bài viết
+                        {room?.isAvailable ? 'Bài đã duyệt' : 'Duyệt bài viết'}
                     </button>
                 </div>
             </div>

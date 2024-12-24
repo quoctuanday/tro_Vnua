@@ -1,12 +1,12 @@
 'use client';
 import { getUser } from '@/api/api';
 import FavoriteBox from '@/components/favoritebox';
-import FooterPage from '@/components/footer';
 import { useUser } from '@/store/userData';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FaHeart } from 'react-icons/fa';
+import FooterPage from '@/components/footer';
 
 export default function MainLayout({
     children,
@@ -16,11 +16,11 @@ export default function MainLayout({
     const { userLoginData, setUserLoginData } = useUser();
     const [isClient, setIsClient] = useState(false);
     const [isFavouriteBox, setIsFavouriteBox] = useState(false);
+
     useEffect(() => {
         setIsClient(true);
-        const token = localStorage.getItem('token');
-        if (token) {
-            const fetchData = async () => {
+        const fetchData = async () => {
+            try {
                 const response = await getUser();
                 if (response) {
                     console.log(response.data);
@@ -31,16 +31,22 @@ export default function MainLayout({
                         setUserLoginData(JSON.parse(storedUser));
                     }
                 }
-            };
-            fetchData();
-        }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchData();
     }, [setUserLoginData]);
+
     if (!isClient) {
         return null;
     }
+
+   
+
     return (
         <div className="min-h-[80vh]">
-            <div className="">
+            <div>
                 <div className="flex items-center justify-between px-[13rem] ">
                     <Image
                         src={'/images/logo.png'}
@@ -48,7 +54,7 @@ export default function MainLayout({
                         width={1000}
                         height={1000}
                         className="w-[8.5rem] h-[3.5rem]"
-                    ></Image>
+                    />
                     <div className="flex items-center roboto-bold">
                         {userLoginData ? (
                             <>
@@ -61,11 +67,9 @@ export default function MainLayout({
                                         <FaHeart className="ml-4 text-[#de0305] hover:text-[#de03079a] cursor-pointer" />
                                     </button>
                                     {isFavouriteBox && (
-                                        <div className="box-open absolute  right-0 bg-white rounded w-[30rem] min-h-[20rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
+                                        <div className="box-open absolute right-0 bg-white rounded w-[30rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
                                             <FavoriteBox
-                                                setIsFavouriteBox={
-                                                    setIsFavouriteBox
-                                                }
+                                                setIsFavouriteBox={setIsFavouriteBox}
                                             />
                                         </div>
                                     )}
@@ -81,7 +85,7 @@ export default function MainLayout({
                                         width={100}
                                         height={100}
                                         className="w-[2rem] h-[2rem] rounded-full ml-3"
-                                    ></Image>
+                                    />
                                 </Link>
                             </>
                         ) : (
@@ -103,36 +107,28 @@ export default function MainLayout({
                         )}
                     </div>
                 </div>
+
                 <div className="flex items-center bg-rootColor text-white px-[13rem] py-3 ">
-                    <Link
-                        href={'/home'}
-                        className="roboto-bold block hover:underline"
-                    >
+                    <Link href={'/home'} className="roboto-bold block hover:underline">
                         Trang chủ
                     </Link>
-                    <Link
-                        href={'/rooms'}
-                        className="roboto-bold ml-9 hover:underline block"
-                    >
+                    <Link href={'/rooms'} className="roboto-bold ml-9 hover:underline block">
                         Cho thuê phòng
                     </Link>
-                    <Link
-                        href={'/roommates'}
-                        className="roboto-bold ml-9 hover:underline block"
-                    >
+                    <Link href={'/roommates'} className="roboto-bold ml-9 hover:underline block">
                         Tìm người ở ghép
                     </Link>
-                    <Link
-                        href={'/news'}
-                        className="roboto-bold ml-9 hover:underline block"
-                    >
+                    <Link href={'/news'} className="roboto-bold ml-9 hover:underline block">
                         Tin tức
                     </Link>
                 </div>
             </div>
+
             <div className="bg-[#efefef3f] px-[13rem]">{children}</div>
             <div className="pt-[5rem] w-full bg-[#efefef3f]"></div>
             <FooterPage />
+
+            
         </div>
     );
 }

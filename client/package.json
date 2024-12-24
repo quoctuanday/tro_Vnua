@@ -15,6 +15,7 @@
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
+    "emailjs-com": "^3.2.0",
     "firebase": "^11.0.1",
     "leaflet": "^1.9.4",
     "next": "15.0.2",

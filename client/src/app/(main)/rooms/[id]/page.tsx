@@ -146,53 +146,74 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     return (
         <div className="grid grid-cols-3 roboto-regular p-3 bg-white rounded-lg shadow-md">
             <div className="col-span-2 w-full  pr-6">
-                <h1 className="text-3xl font-semibold mb-6 text-gray-800">
-                    {roomDetail.title}
-                </h1>
-
                 <div className="mb-6">
-                    {Array.isArray(roomDetail.images) &&
-                    roomDetail.images.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-4">
-                            {roomDetail.images.map((image, index) => (
-                                <div key={index} className="relative">
-                                    <Image
-                                        src={image}
-                                        alt={`Ảnh ${index + 1} của ${
-                                            roomDetail.title
-                                        }`}
-                                        width={100}
-                                        height={100}
-                                        className="h-[15rem] w-auto  rounded-lg cursor-pointer transition-transform transform hover:scale-105"
-                                        onClick={() => openImageModal(image)}
-                                    />
-                                </div>
-                            ))}
+                    {Array.isArray(roomDetail.images) && roomDetail.images.length > 0 ? (
+                        <div>
+                            <div className="mb-4">
+                                <Image
+                                    src={selectedImage || roomDetail.images[0]}  
+                                    alt={`Ảnh lớn của ${roomDetail.title}`}
+                                    width={500}
+                                    height={500}
+                                    className="w-full h-auto rounded-lg object-cover"
+                                />
+                            </div>
+                            <div className="grid grid-cols-5 gap-4">
+                                {roomDetail.images.map((image, index) => (
+                                    <div key={index} className="relative">
+                                        <Image
+                                            src={image}
+                                            alt={`Ảnh nhỏ ${index + 1} của ${roomDetail.title}`}
+                                            width={100}
+                                            height={100}
+                                            className={`h-[5rem] w-auto rounded-lg cursor-pointer transition-transform transform hover:scale-105 ${selectedImage === image ? 'border-2 border-blue-500' : ''}`}
+                                            onClick={() => setSelectedImage(image)}  
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <Image
                             src="/path/to/default-image.jpg"
                             alt="Ảnh mặc định"
-                            width={100}
-                            height={100}
+                            width={500}
+                            height={500}
                             className="w-full h-auto rounded-lg"
                         />
                     )}
                 </div>
 
-                <div className="text-sm text-gray-600 space-y-2">
-                    <p>Ngày đăng: {dateConvert(roomDetail.createdAt)}</p>
-                    <p>
-                        Giá:{' '}
-                        {new Intl.NumberFormat('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND',
-                        }).format(roomDetail.price)}{' '}
-                        /tháng
+                <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+                    {roomDetail.title}
+                </h1>
+                <div className="bg-white p-4 rounded-lg shadow-md space-y-4">
+                    <p className="text-sm text-gray-600">
+                        <span className="font-semibold">Ngày đăng:</span> {dateConvert(roomDetail.createdAt)}
                     </p>
-                    <p>Diện tích: {roomDetail.acreage} m²</p>
-                    <p>Địa chỉ: {roomDetail.location.name}</p>
+                    
+                    <div className="flex items-center space-x-3 text-base text-gray-600">
+                        <p className="flex items-center space-x-1">
+                            <span className="font-semibold">Giá:</span>
+                            <span>
+                                {new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND',
+                                }).format(roomDetail.price)}{' '}
+                                /tháng
+                            </span>
+                        </p>
+                        <p className="flex items-center space-x-1">
+                            <span className="font-semibold">Diện tích:</span>
+                            <span>{roomDetail.acreage} m²</span>
+                        </p>
+                    </div>
+
+                    <p className="text-base text-gray-600">
+                        <span className="font-semibold">Địa chỉ:</span> {roomDetail.location.name}
+                    </p>
                 </div>
+
                 <CustomerMap
                     latitude={roomDetail.location.coordinates.latitude}
                     longitude={roomDetail.location.coordinates.longitude}
@@ -200,13 +221,12 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 />
 
                 <div className="my-6">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        Giới thiệu về phòng
-                    </h2>
-                    <p className="text-lg mb-4 text-gray-700 whitespace-pre-line">
+                    <h2 className="text-xl font-semibold text-gray-800">Thông tin mô tả</h2>
+                    <p className="text-lg mb-4 text-gray-700 whitespace-pre-line leading-relaxed">
                         {roomDetail.description}
                     </p>
                 </div>
+
                 <div className="mt-3">
                     <h1 className="roboto-bold">Bình luận và đánh giá</h1>
 
@@ -387,40 +407,15 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 </div>
             </div>
 
-            <div className="col-span-1 w-full bg-gray-50 p-4 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
-                <h2 className="text-xl font-semibold text-gray-800">
-                    Thông tin chủ sở hữu
-                </h2>
-                <p>
-                    <strong>Chủ sở hữu:</strong> {roomDetail.ownerName}
-                </p>
-                <p>
-                    <strong>Số điện thoại:</strong> {roomDetail.contactNumber}
-                </p>
-                <p>
-                    <strong>Email:</strong> {roomDetail.contactEmail}
-                </p>
+            <div className="col-span-1 w-full bg-gray-50 p-6 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
+                <h2 className="text-2xl font-semibold text-gray-800">Thông tin chủ sở hữu</h2>
+                <div className="text-lg text-gray-700 space-y-2">
+                    <p><strong className="font-bold">Chủ sở hữu:</strong> {roomDetail.ownerName}</p>
+                    <p><strong className="font-bold">Số điện thoại:</strong> <a href={`tel:${roomDetail.contactNumber}`} className="text-blue-600">{roomDetail.contactNumber}</a></p>
+                    <p><strong className="font-bold">Email:</strong> <a href={`mailto:${roomDetail.contactEmail}`} className="text-blue-600">{roomDetail.contactEmail}</a></p>
+                </div>
             </div>
 
-            {selectedImage && (
-                <div className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-                    <div className="relative max-w-[80vw] max-h-[80vh]">
-                        <Image
-                            src={selectedImage}
-                            alt="Selected"
-                            width={100}
-                            height={100}
-                            className="w-full h-auto object-contain rounded-lg shadow-lg"
-                        />
-                        <button
-                            onClick={closeImageModal}
-                            className="absolute top-4 right-4 text-white bg-black p-2 rounded-full hover:bg-red-500 transition"
-                        >
-                            X
-                        </button>
-                    </div>
-                </div>
-            )}
             <Toaster position="top-right" />
         </div>
     );

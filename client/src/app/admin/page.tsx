@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { AiOutlineRedo } from 'react-icons/ai';
 import { FaSpinner } from 'react-icons/fa';
 import { MdFilterListAlt } from 'react-icons/md';
+
 interface Props {
     totalRevenue: number;
     userCount: number;
@@ -26,6 +27,7 @@ function Adminpage() {
     const [data, setData] = useState<Props | null>(null);
     const [start, setStart] = useState<Date | null>(null);
     const [end, setEnd] = useState<Date | null>(null);
+
     const getData = async () => {
         const starts = new Date(new Date().getFullYear(), 0, 1);
         const ends = new Date();
@@ -37,6 +39,7 @@ function Adminpage() {
             setData(data.data);
         }
     };
+
     useEffect(() => {
         getData();
     }, []);
@@ -48,8 +51,7 @@ function Adminpage() {
     const onSubmit = (data) => {
         const starts = new Date(data.start);
         const ends = new Date(data.end);
-        console.log(starts, ends);
-        const getData = async () => {
+        const fetchFilteredData = async () => {
             setStart(starts);
             setEnd(ends);
             const response = await getCount(starts, ends);
@@ -58,109 +60,96 @@ function Adminpage() {
                 setData(data.data);
             }
         };
-        getData();
+        fetchFilteredData();
         reset();
     };
+
     return (
-        <div>
-            <div className="h-[3rem] flex items-center justify-end px-2">
+        <div className="min-h-screen bg-gray-100 p-4">
+            <div className="flex items-center justify-between bg-white shadow-md p-4 rounded-md">
                 <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="flex items-center "
+                    className="flex items-center gap-4"
                 >
-                    <label>Từ: </label>
-                    <input
-                        {...register('start', { required: true })}
-                        type="date"
-                        className=" ml-2 rounded bg-[#f4f3f8] border"
-                    />
-                    <label className="ml-2"> đến: </label>
-                    <input
-                        {...register('end', { required: true })}
-                        type="date"
-                        className=" ml-2 rounded bg-[#f4f3f8] border"
-                    />
-                    <button className=" ml-2 px-2 py-1 rounded-[10px] text-white bg-rootColor hover:bg-[#699ba3b8] flex items-center">
-                        <MdFilterListAlt className="pr-1" />
-                        Lọc
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Từ:</label>
+                        <input
+                            {...register('start', { required: true })}
+                            type="date"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Đến:</label>
+                        <input
+                            {...register('end', { required: true })}
+                            type="date"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                        <MdFilterListAlt className="mr-2" /> Lọc
                     </button>
                     <button
-                        onClick={() => {
-                            redo();
-                        }}
+                        onClick={redo}
                         type="button"
-                        className="text-white ml-2 bg-rootColor hover:bg-[#699ba3b8] p-1 rounded-full"
+                        className="inline-flex items-center p-2 text-sm font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                         <AiOutlineRedo />
                     </button>
                 </form>
             </div>
-            <div className="bg-white h-[30rem]">
+
+            <div className="mt-6 bg-white shadow-md rounded-md p-6">
                 {data ? (
-                    <div className=" grid grid-cols-2 gap-3">
-                        <div className="col-span-1">
-                            <div className="">
-                                <span>
-                                    Tổng số người dùng: {data.userCount}
-                                </span>
-                                <span>Tổng số tin tức: {data.newsCount} </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-md shadow">
+                                <h3 className="text-lg font-semibold text-gray-800">Thống kê chung</h3>
+                                <p className="text-sm text-gray-600">Tổng số người dùng: {data.userCount}</p>
+                                <p className="text-sm text-gray-600">Tổng số tin tức: {data.newsCount}</p>
+                                <p className="text-sm text-gray-600">Tổng doanh thu: {Currency(data.totalRevenue)}</p>
                             </div>
-                            <span>
-                                Tổng doanh thu: {Currency(data.totalRevenue)}{' '}
-                            </span>
-                            <div className="">
-                                {start && end && (
+                            {start && end && (
+                                <div className="bg-gray-50 p-4 rounded-md shadow">
                                     <BarChart start={start} end={end} />
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
-                        <div className="col-span-1">
-                            <div className="">
-                                <span>
-                                    Bài đăng thuê phòng:{' '}
-                                    {data.roomCount.availableRoomCount +
-                                        data.roomCount.unavailableRoomCount}
-                                </span>
-                                <div className="flex items-center">
-                                    <span>
-                                        Chưa duyệt:{' '}
-                                        {data.roomCount.unavailableRoomCount}
-                                    </span>
-                                    <span>
-                                        Đã duyệt:{' '}
-                                        {data.roomCount.availableRoomCount}
-                                    </span>
-                                </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-md shadow">
+                                <h3 className="text-lg font-semibold text-gray-800">Bài đăng thuê phòng</h3>
+                                <p className="text-sm text-gray-600">
+                                    Tổng số bài đăng: {data.roomCount.availableRoomCount + data.roomCount.unavailableRoomCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Đã duyệt: {data.roomCount.availableRoomCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Chưa duyệt: {data.roomCount.unavailableRoomCount}
+                                </p>
                             </div>
-                            <div className="">
-                                <span>
-                                    Bài đăng tìm người ở ghép:{' '}
-                                    {data.roommateCount.availableRoommateCount +
-                                        data.roommateCount
-                                            .unavailableRoommateCount}
-                                </span>
-                                <div className="flex items-center">
-                                    <span>
-                                        Chưa duyệt:{' '}
-                                        {
-                                            data.roommateCount
-                                                .unavailableRoommateCount
-                                        }
-                                    </span>
-                                    <span>
-                                        Đã duyệt:{' '}
-                                        {
-                                            data.roommateCount
-                                                .availableRoommateCount
-                                        }
-                                    </span>
-                                </div>
+                            <div className="bg-gray-50 p-4 rounded-md shadow">
+                                <h3 className="text-lg font-semibold text-gray-800">Bài đăng tìm người ở ghép</h3>
+                                <p className="text-sm text-gray-600">
+                                    Tổng số bài đăng: {data.roommateCount.availableRoommateCount + data.roommateCount.unavailableRoommateCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Đã duyệt: {data.roommateCount.availableRoommateCount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    Chưa duyệt: {data.roommateCount.unavailableRoommateCount}
+                                </p>
                             </div>
                         </div>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-full">
-                        <FaSpinner className="spin" />
+                        <FaSpinner className="animate-spin text-indigo-600" size={24} />
                     </div>
                 )}
             </div>
