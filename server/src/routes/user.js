@@ -21,6 +21,8 @@ router.get(
 router.put('/updateProfile', authenticateToken, userController.updateProfile);
 router.get('/getUser', authenticateToken, userController.getUser);
 router.post('/refreshToken', userController.refreshToken);
+router.post('/forgotPassword', userController.forgotPassword);
+router.put('/resetPassword/:userId', userController.resetPass);
 router.get('/logout', userController.logOut);
 router.post('/login', userController.login);
 router.post('/create', userController.createUser);

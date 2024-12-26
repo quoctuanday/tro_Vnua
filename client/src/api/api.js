@@ -77,6 +77,10 @@ export const logout = () => api.get('/users/logout', { withCredentials: true });
 
 export const login = (data) =>
     api.post('/users/login', { data }, { withCredentials: true });
+export const forgotPassword = (data) =>
+    api.post('/users/forgotPassword', { data });
+export const resetPassword = (userId, data) =>
+    api.put(`/users/resetPassword/${userId}`, { data });
 
 export const getUser = () => api.get('/users/getUser');
 export const updateProfile = (data) =>
@@ -160,8 +164,8 @@ export const deleteCategory = (id) => api.delete(`/category/delete/${id}`);
 //Comment
 export const createComment = (data) => api.post('/comments/create', { data });
 export const getComment = (id, type) =>
-    api.get(`/comments/get/${id}`, { type });
-
+    api.get(`/comments/get/${id}?type=${type}`);
+export const deleteComment = (id) => api.delete(`/comments/delete/${id}`);
 //Payment
 export const checkOut = (data) => api.post('/payment/vnpay/create', { data });
 export const updateCheckout = (query, data) =>

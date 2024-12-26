@@ -1,12 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createComment, getAllRoommates, getComment } from '@/api/api';
+import {
+    createComment,
+    deleteComment,
+    getAllRoommates,
+    getComment,
+} from '@/api/api';
 import { Comments } from '@/schema/Comment';
 import dateConvert from '@/utils/convertDate';
 import Image from 'next/image';
 import { Controller, useForm } from 'react-hook-form';
-import { FaRegStar, FaStar } from 'react-icons/fa';
+import { FaRegStar, FaStar, FaTrash } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import CustomerMap from '@/components/Map';
@@ -35,6 +40,7 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    console.log(coord);
     useEffect(() => {
         const fetchRoommateDetail = async () => {
             try {
@@ -109,6 +115,13 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
             setUserComment(userCmt || null);
         }
     }, [comment, userLoginData]);
+
+    const handleDeletePersonal = async (id: string) => {
+        const response = await deleteComment(id);
+        if (response) {
+            toast.success('Bạn đã xóa bình luận!');
+        }
+    };
 
     const onSubmit = async (data: Comment) => {
         data.roommateId = roommateId;
@@ -235,7 +248,7 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                     className="rounded-full w-[3rem] h-[3rem]"
                                 ></Image>
 
-                                <div className="flex flex-col ml-2">
+                                <div className="flex flex-col ml-2 w-full">
                                     <p className="roboto-bold">
                                         {userComment.userName}
                                     </p>
@@ -259,9 +272,22 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                     <p className="mt-2 whitespace-pre-line">
                                         {userComment.content}
                                     </p>
-                                    <span className="roboto-thin">
-                                        {dateConvert(userComment.createdAt)}
-                                    </span>
+                                    <div className="flex items-center justify-between">
+                                        <span className="roboto-thin">
+                                            {dateConvert(userComment.createdAt)}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleDeletePersonal(
+                                                    userComment._id
+                                                );
+                                            }}
+                                            className="text-red-500"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

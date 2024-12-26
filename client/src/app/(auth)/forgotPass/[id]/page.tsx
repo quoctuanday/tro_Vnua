@@ -1,7 +1,6 @@
 'use client';
-import { login } from '@/api/api';
+import { resetPassword } from '@/api/api';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,13 +9,18 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { TfiReload } from 'react-icons/tfi';
 
 interface IFormInput {
-    email: string;
     password: string;
+    passwordConfirm: string;
 }
 
-function LoginPage() {
+function ResetPassPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
-    const { register, handleSubmit } = useForm<IFormInput>();
+    const {
+        register,
+        handleSubmit,
+        watch,
+        formState: { errors },
+    } = useForm<IFormInput>();
     const [hiddenPass, setHiddenPass] = useState(true);
     const [isRoting, setIsRoting] = useState(false);
     const [captcha, setCaptcha] = useState('');
@@ -24,6 +28,7 @@ function LoginPage() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const password = watch('password');
     const drawCaptcha = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -65,29 +70,32 @@ function LoginPage() {
         drawCaptcha();
     }, []);
 
-    const onSubmit = (data: unknown) => {
+    const onSubmit = async (data: unknown) => {
+        const resolvedParams = await params;
+        const { id } = resolvedParams;
+
         if (inputRef.current?.value !== captcha) {
             setError('Captcha không hợp lệ. Mời nhập lại!');
             return;
         }
         const fetchData = async () => {
             try {
-                const response = await login(data);
+                const response = await resetPassword(id, data);
                 if (response) {
-                    console.log(response.data);
-                    toast.success('Đăng nhập thành công');
-                    localStorage.setItem('token', response.data.accessToken);
+                    toast.success('Thay đổi mật khẩu thành công!');
                     setTimeout(() => {
-                        router.push('/home');
+                        router.push('/login');
                     }, 2000);
                 }
             } catch (error) {
-                toast.error('Sai tài khoản hoặc mật khẩu !');
                 console.log(error);
             }
         };
         fetchData();
     };
+
+    const regex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
     return (
         <div className="flex items-center justify-center h-[100vh] bg-[#efefef]">
@@ -104,39 +112,59 @@ function LoginPage() {
                         priority
                         className=" w-[14rem] h-[5rem] absolute top-0 left-[50%] transform translate-x-[-50%]"
                     ></Image>
-                    <h1 className="pt-[4rem] roboto-bold text-center text-[1.2rem] ">
-                        Đăng nhập
+                    <h1 className="pt-[4.3rem] roboto-bold text-center text-[1.2rem] ">
+                        Thay đổi mật khẩu
                     </h1>
                     <div className="mt-2">
-                        <label className="block">Tài khoản</label>
-                        <input
-                            type="email"
-                            {...register('email')}
-                            placeholder="example@gmail.com"
-                            required
-                            className="border-2 w-full px-2 py-1 rounded-[0.5rem] bg-[#efefef] outline-none "
-                        />
-                    </div>
-                    <div className="mt-2">
-                        <label className="block">Mật khẩu</label>
+                        <label className="block">Mật khẩu mới </label>
                         <div className="relative">
                             <input
                                 type={hiddenPass ? 'password' : 'text'}
-                                {...register('password')}
+                                {...register('password', {
+                                    required: true,
+                                    minLength: {
+                                        value: 8,
+                                        message: 'Mật khẩu từ 8 kí tự trở lên.',
+                                    },
+                                    pattern: {
+                                        value: regex,
+                                        message:
+                                            'Mật khẩu cần ít nhất 1 kí tự in hoa, 1 kí tự in thường, 1 số và 1 kí tự đặc biệt.',
+                                    },
+                                })}
                                 placeholder="Nhập mật khẩu của bạn"
-                                required
                                 className="border-2 w-full px-2 py-1 rounded-[0.5rem] bg-[#efefef] outline-none "
                             />
-                            <i
+                            <button
+                                type="button"
                                 className="absolute cursor-pointer top-[50%] translate-y-[-50%] right-[5%]"
                                 onClick={() => setHiddenPass(!hiddenPass)}
                             >
                                 {hiddenPass ? <FaEyeSlash /> : <FaEye />}
-                            </i>
+                            </button>
                         </div>
                     </div>
                     <div className="mt-2">
-                        <Link href={'/forgotPass'}>Quên mật khẩu ?</Link>
+                        <label className="block">Nhập lại mật khẩu</label>
+                        <div className="relative">
+                            <input
+                                type={hiddenPass ? 'password' : 'text'}
+                                {...register('passwordConfirm', {
+                                    validate: (value) =>
+                                        value === password ||
+                                        'Mật khẩu không trùng khớp.',
+                                })}
+                                placeholder="Nhập lại mật khẩu của bạn"
+                                className="border-2 w-full px-2 py-1 rounded-[0.5rem] bg-[#efefef] outline-none "
+                            />
+                            <button
+                                type="button"
+                                className="absolute cursor-pointer top-[50%] translate-y-[-50%] right-[5%]"
+                                onClick={() => setHiddenPass(!hiddenPass)}
+                            >
+                                {hiddenPass ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
                     </div>
                     <div className="mt-3">
                         <div className="border-2 border-dotted w-full h-[5rem]">
@@ -172,28 +200,15 @@ function LoginPage() {
                         </div>
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <button className="mt-2 w-full py-1 text-center rounded-[0.5rem] bg-rootColor hover:bg-[#699ba3d9] text-white">
-                        Đăng nhập
+
+                    <p className="text-red-500">{errors.password?.message}</p>
+                    <p className="text-red-500">
+                        {errors.passwordConfirm?.message}
+                    </p>
+
+                    <button className="mt-5 mb-5 w-full py-1 text-center rounded-[0.5rem] bg-rootColor hover:bg-[#699ba3d9] text-white">
+                        Xác nhận
                     </button>
-                    <div className="mt-2 pb-[1.3rem]">
-                        <div>
-                            <p className="inline text-[#ccc]">
-                                Chưa có tài khoản?{' '}
-                            </p>
-                            <Link
-                                className="hover:underline hover:text-blue-400"
-                                href={'/register'}
-                            >
-                                Đăng ký ngay!
-                            </Link>
-                        </div>
-                        <Link
-                            className="hover:underline hover:text-blue-400"
-                            href={'/home'}
-                        >
-                            Tham gia với tư cách khách!
-                        </Link>
-                    </div>
                 </form>
             </div>
             <Toaster position="top-right" />
@@ -201,4 +216,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default ResetPassPage;

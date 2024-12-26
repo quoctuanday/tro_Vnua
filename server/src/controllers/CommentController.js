@@ -71,8 +71,10 @@ class CommentController {
 
     get(req, res) {
         const roomId = req.params.roomId;
-        const type = req.body.type;
-        Comment.find(type ? { roomId: roomId } : { roommateId: roomId })
+        const { type } = req.query;
+        Comment.find(
+            type === 'true' ? { roomId: roomId } : { roommateId: roomId }
+        )
             .populate('userId', 'userName image')
             .then((comments) => {
                 if (!comments)
@@ -91,6 +93,18 @@ class CommentController {
             })
             .catch((error) => {
                 console.log('Get comment error: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
+    delete(req, res) {
+        const commentId = req.params.commentId;
+        Comment.findByIdAndDelete(commentId)
+            .then((comment) => {
+                if (!comment) return;
+                res.status(200).json({ message: 'Comment deleted' });
+            })
+            .catch((error) => {
+                console.log('error deleting comment: ', error);
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }

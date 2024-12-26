@@ -1,13 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createComment, getAllRooms, getComment } from '@/api/api';
+import {
+    createComment,
+    deleteComment,
+    getAllRooms,
+    getComment,
+} from '@/api/api';
 import { Room } from '@/schema/room';
 import { Comments } from '@/schema/Comment';
 import dateConvert from '@/utils/convertDate';
 import Image from 'next/image';
 import { Controller, useForm } from 'react-hook-form';
-import { FaRegStar, FaStar } from 'react-icons/fa';
+import { FaRegStar, FaStar, FaTrash } from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import { useUser } from '@/store/userData';
 import CustomerMap from '@/components/Map';
@@ -34,6 +39,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const [coord, setCoord] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    console.log(coord);
 
     useEffect(() => {
         const fetchRoomDetail = async () => {
@@ -106,6 +112,12 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
             setUserComment(userCmt || null);
         }
     }, [comment, userLoginData]);
+    const handleDeletePersonal = async (id: string) => {
+        const response = await deleteComment(id);
+        if (response) {
+            toast.success('Bạn đã xóa bình luận!');
+        }
+    };
 
     const onSubmit = async (data: Comment) => {
         data.roomId = roomId;
@@ -199,7 +211,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     {userComment ? (
                         <div className="mt-1">
                             <h1 className="roboto-bold">Bình luận của bạn</h1>
-                            <div className="flex mt-3">
+                            <div className="flex mt-3 w-full">
                                 <Image
                                     src={
                                         userComment.image
@@ -212,7 +224,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                     className="rounded-full w-[3rem] h-[3rem]"
                                 ></Image>
 
-                                <div className="flex flex-col ml-2">
+                                <div className="flex flex-col ml-2 w-full">
                                     <p className="roboto-bold">
                                         {userComment.userName}
                                     </p>
@@ -236,9 +248,22 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                     <p className="mt-2 whitespace-pre-line">
                                         {userComment.content}
                                     </p>
-                                    <span className="roboto-thin">
-                                        {dateConvert(userComment.createdAt)}
-                                    </span>
+                                    <div className="flex items-center justify-between">
+                                        <span className="roboto-thin">
+                                            {dateConvert(userComment.createdAt)}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleDeletePersonal(
+                                                    userComment._id
+                                                );
+                                            }}
+                                            className="text-red-500"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -328,48 +353,58 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                     )}
                     <h1 className="roboto-bold mt-3">Các bình luận </h1>
-                    {comment.map((comment) => (
-                        <div className="flex mt-3" key={comment._id}>
-                            <Image
-                                src={
-                                    comment.image
-                                        ? comment.image
-                                        : '/images/avatar-trang.jpg'
-                                }
-                                alt=""
-                                width={100}
-                                height={100}
-                                className="rounded-full w-[3rem] h-[3rem]"
-                            ></Image>
+                    {comment.length > 0 ? (
+                        <div>
+                            {comment.map((comment) => (
+                                <div className="flex mt-3" key={comment._id}>
+                                    <Image
+                                        src={
+                                            comment.image
+                                                ? comment.image
+                                                : '/images/avatar-trang.jpg'
+                                        }
+                                        alt=""
+                                        width={100}
+                                        height={100}
+                                        className="rounded-full w-[3rem] h-[3rem]"
+                                    ></Image>
 
-                            <div className="flex flex-col ml-2">
-                                <p className="roboto-bold">
-                                    {comment.userName}
-                                </p>
-                                <div className="flex items-center mt-1">
-                                    {Array.from({ length: 5 }).map((_, index) =>
-                                        index < (comment?.rate || 0) ? (
-                                            <FaStar
-                                                key={index}
-                                                className="text-yellow-500 text-[1rem] mr-1"
-                                            />
-                                        ) : (
-                                            <FaRegStar
-                                                key={index}
-                                                className="text-gray-400 text-[1rem] mr-1"
-                                            />
-                                        )
-                                    )}
+                                    <div className="flex flex-col ml-2">
+                                        <p className="roboto-bold">
+                                            {comment.userName}
+                                        </p>
+                                        <div className="flex items-center mt-1">
+                                            {Array.from({ length: 5 }).map(
+                                                (_, index) =>
+                                                    index <
+                                                    (comment?.rate || 0) ? (
+                                                        <FaStar
+                                                            key={index}
+                                                            className="text-yellow-500 text-[1rem] mr-1"
+                                                        />
+                                                    ) : (
+                                                        <FaRegStar
+                                                            key={index}
+                                                            className="text-gray-400 text-[1rem] mr-1"
+                                                        />
+                                                    )
+                                            )}
+                                        </div>
+                                        <p className="mt-2 whitespace-pre-line">
+                                            {comment.content}
+                                        </p>
+                                        <span className="roboto-thin">
+                                            {dateConvert(comment.createdAt)}
+                                        </span>
+                                    </div>
                                 </div>
-                                <p className="mt-2 whitespace-pre-line">
-                                    {comment.content}
-                                </p>
-                                <span className="roboto-thin">
-                                    {dateConvert(comment.createdAt)}
-                                </span>
-                            </div>
+                            ))}
                         </div>
-                    ))}
+                    ) : (
+                        <div className="text-center text-red-500 w-full">
+                            Chưa có bình luận nào!
+                        </div>
+                    )}
                 </div>
             </div>
 
