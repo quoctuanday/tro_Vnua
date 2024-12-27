@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import {
+    blockComment,
     createComment,
     deleteComment,
     getAllRoommates,
@@ -18,6 +19,7 @@ import CustomerMap from '@/components/Map';
 import { Roommate } from '@/schema/Roommate';
 import Link from 'next/link';
 import Carousel from '@/components/carousel';
+import { MdOutlineBlock } from 'react-icons/md';
 
 interface Comment {
     roommateId: string;
@@ -32,6 +34,7 @@ type Coordinates = {
 function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { socket, userLoginData } = useUser();
     const [userComment, setUserComment] = useState<Comments | null>(null);
+    const [filterComment, setFilterComment] = useState<Comments[]>([]);
     const [comment, setComment] = useState<Comments[]>([]);
     const { register, handleSubmit, control, reset } = useForm<Comment>();
     const [roommateId, setRoommateId] = useState('');
@@ -89,10 +92,11 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
             const response = await getComment(id, false);
             if (response && response.data.comment) {
                 const data = response.data.comment;
-                const filcomment = data.filter(
-                    (prev: Comments) => prev.roommateId
+                setComment(data);
+                const filComment = data.filter(
+                    (comment: Comments) => comment.isBlocked !== true
                 );
-                setComment(filcomment);
+                setFilterComment(filComment);
             }
         };
         getComments();
@@ -120,6 +124,12 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
         const response = await deleteComment(id);
         if (response) {
             toast.success('Bạn đã xóa bình luận!');
+        }
+    };
+    const handleBlock = async (id: string) => {
+        const response = await blockComment(id);
+        if (response) {
+            toast.success('Đã khóa bình luận!');
         }
     };
 
@@ -249,9 +259,17 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                 ></Image>
 
                                 <div className="flex flex-col ml-2 w-full">
-                                    <p className="roboto-bold">
-                                        {userComment.userName}
-                                    </p>
+                                    <div className="flex items-center">
+                                        <p className="roboto-bold">
+                                            {userComment.userName}
+                                        </p>
+
+                                        {userComment.isBlocked && (
+                                            <div className="ml-2 text-red-400 text-[0.8rem]">
+                                                Đã bị khóa
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="flex items-center mt-1">
                                         {Array.from({ length: 5 }).map(
                                             (_, index) =>
@@ -377,7 +395,7 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                     )}
                     <h1 className="roboto-bold mt-3">Các bình luận </h1>
-                    {comment.map((comment) => (
+                    {filterComment.map((comment) => (
                         <div className="flex mt-3" key={comment._id}>
                             <Image
                                 src={
@@ -413,9 +431,24 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                                 <p className="mt-2 whitespace-pre-line">
                                     {comment.content}
                                 </p>
-                                <span className="roboto-thin">
-                                    {dateConvert(comment.createdAt)}
-                                </span>
+                                <div className="flex items-center justify-between">
+                                    <span className="roboto-thin">
+                                        {dateConvert(comment.createdAt)}
+                                    </span>
+                                    {(userLoginData?.role === 'admin' ||
+                                        userLoginData?.role ===
+                                            'moderator') && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleBlock(comment._id);
+                                            }}
+                                            className="hover:text-red-500"
+                                        >
+                                            <MdOutlineBlock />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

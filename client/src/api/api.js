@@ -166,6 +166,7 @@ export const createComment = (data) => api.post('/comments/create', { data });
 export const getComment = (id, type) =>
     api.get(`/comments/get/${id}?type=${type}`);
 export const deleteComment = (id) => api.delete(`/comments/delete/${id}`);
+export const blockComment = (id) => api.put(`/comments/block/${id}`);
 //Payment
 export const checkOut = (data) => api.post('/payment/vnpay/create', { data });
 export const updateCheckout = (query, data) =>

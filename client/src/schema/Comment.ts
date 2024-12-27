@@ -7,6 +7,7 @@ export type Comments = {
     image?: string;
     content: string;
     rate: number;
+    isBlocked: boolean;
     createdAt?: string;
     updatedAt?: string;
 };

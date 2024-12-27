@@ -226,7 +226,8 @@ export default function ProfileLayout({
                                 Bài đăng tin tức
                             </Link>
                         )}
-                        {userLoginData.role === 'admin' && (
+                        {(userLoginData.role === 'admin' ||
+                            userLoginData.role === 'moderator') && (
                             <Link
                                 href={'/admin'}
                                 className="block py-1 hover:bg-rootColor hover:text-white rounded pl-2 cursor-pointer"

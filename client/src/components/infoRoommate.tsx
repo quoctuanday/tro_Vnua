@@ -1,6 +1,7 @@
 'use client';
 import { updateRoommate } from '@/api/api';
 import { Roommate } from '@/schema/Roommate';
+import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
 import React from 'react';
 import toast from 'react-hot-toast';
@@ -91,13 +92,13 @@ function InfoRoommatemate({ setFormOpen, roommate }: Props) {
                         <div className="flex items-center">
                             <span className="font-semibold">Diện tích:</span>
                             <p className="ml-2 text-gray-700">
-                                {roommate?.acreage}
+                                {roommate?.acreage} m<sup>2</sup>
                             </p>
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Giá:</span>
                             <p className="ml-2 text-gray-700">
-                                {roommate?.price}
+                                {Currency(roommate?.price)}/tháng
                             </p>
                         </div>
                         <div>

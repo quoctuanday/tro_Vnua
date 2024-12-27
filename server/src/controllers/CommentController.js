@@ -108,6 +108,18 @@ class CommentController {
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
+    block(req, res) {
+        const commentId = req.params.commentId;
+        Comment.findByIdAndUpdate(commentId, { isBlocked: true })
+            .then((comment) => {
+                if (!comment) return;
+                res.status(200).json({ message: 'Comment blocked' });
+            })
+            .catch((error) => {
+                console.log('error blocked comment: ', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            });
+    }
 }
 
 module.exports = new CommentController();

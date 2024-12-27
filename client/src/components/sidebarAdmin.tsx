@@ -55,18 +55,21 @@ function SidebarAdmin() {
             <div className="mt-3">
                 <h2 className="text-rootColor">Chức năng chính</h2>
                 <ul className="mt-3">
-                    <Link
-                        href={'/admin/manageUser'}
-                        className={`${
-                            active == '/admin/manageUser' && 'text-rootColor'
-                        } hover:text-rootColor cursor-pointer flex items-center`}
-                        onClick={() => {
-                            handleClickPath('/admin/manageUser');
-                        }}
-                    >
-                        <LuUser2 className="pr-1" />
-                        Quản lí tài khoản
-                    </Link>
+                    {userLoginData?.role === 'admin' && (
+                        <Link
+                            href={'/admin/manageUser'}
+                            className={`${
+                                active == '/admin/manageUser' &&
+                                'text-rootColor'
+                            } hover:text-rootColor cursor-pointer flex items-center`}
+                            onClick={() => {
+                                handleClickPath('/admin/manageUser');
+                            }}
+                        >
+                            <LuUser2 className="pr-1" />
+                            Quản lí tài khoản
+                        </Link>
+                    )}
                     <Link
                         href={'/admin/managePost'}
                         className={`${

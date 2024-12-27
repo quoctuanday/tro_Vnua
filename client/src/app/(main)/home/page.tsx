@@ -106,7 +106,7 @@ function HomePage() {
                     itemWidth={280}
                     speed={10}
                     renderItem={(room) => (
-                        <div className="border p-4 rounded-lg">
+                        <div className="border p-4 rounded-lg h-full">
                             <Image
                                 src={
                                     room.images[0] ||

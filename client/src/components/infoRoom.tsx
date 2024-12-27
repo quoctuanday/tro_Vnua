@@ -1,6 +1,7 @@
 'use client';
 import { updateRoom } from '@/api/api';
 import { Room } from '@/schema/room';
+import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
 import React from 'react';
 import toast from 'react-hot-toast';
@@ -87,12 +88,14 @@ function InfoRoom({ setFormOpen, room }: Props) {
                         <div className="flex items-center">
                             <span className="font-semibold">Diện tích:</span>
                             <p className="ml-2 text-gray-700">
-                                {room?.acreage}
+                                {room?.acreage} m<sup>2</sup>
                             </p>
                         </div>
                         <div className="flex items-center">
                             <span className="font-semibold">Giá:</span>
-                            <p className="ml-2 text-gray-700">{room?.price}</p>
+                            <p className="ml-2 text-gray-700">
+                                {Currency(room?.price)}/tháng
+                            </p>
                         </div>
                         <div>
                             <span className="font-semibold">Mô tả:</span>

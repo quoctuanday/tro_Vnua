@@ -10,6 +10,7 @@ const Comment = new Schema(
         roomId: { type: mongoose.Schema.Types.ObjectId, ref: Room },
         roommateId: { type: mongoose.Schema.Types.ObjectId, ref: Roommate },
         content: { type: String, required: true },
+        isBlocked: { type: Boolean, default: false },
         rate: { type: Number, required: true },
     },
     { timestamps: true }
