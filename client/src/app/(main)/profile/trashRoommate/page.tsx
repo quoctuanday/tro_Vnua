@@ -15,11 +15,17 @@ import {
     FaSortAmountDown,
     FaSortAmountDownAlt,
     FaSpinner,
+    FaTrashRestore,
 } from 'react-icons/fa';
 import { IoWarningOutline } from 'react-icons/io5';
+import { MdDeleteForever } from 'react-icons/md';
+import { RiFeedbackFill } from 'react-icons/ri';
 
 function TrashRoommatePage() {
     const [roommates, setRoommates] = useState<Roommate[]>([]);
+    const [roomSelected, setRoomSelected] = useState<Roommate | null>(null);
+
+    const [formFeedback, setFormFeedback] = useState(false);
     const [reverseSort, setReverseSort] = useState(false);
     const [sortCriterion, setSortCriterion] = useState<
         'name' | 'date' | 'price'
@@ -179,12 +185,22 @@ function TrashRoommatePage() {
                                         </div>
                                         <div className="ml-auto flex items-center">
                                             <button
+                                                onClick={() => {
+                                                    setFormFeedback(true);
+                                                    setRoomSelected(room);
+                                                    console.log(room.feedBack);
+                                                }}
+                                                className="px-2 py-1 rounded bg-orange-500 hover:bg-orange-400 text-white"
+                                            >
+                                                <RiFeedbackFill />
+                                            </button>
+                                            <button
                                                 onClick={() =>
                                                     handelRestore(room._id)
                                                 }
-                                                className="px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
+                                                className="ml-2 px-2 py-1 rounded bg-rootColor hover:bg-[#699ba3c8] text-white"
                                             >
-                                                Khôi phục
+                                                <FaTrashRestore />
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -193,12 +209,31 @@ function TrashRoommatePage() {
                                                 }}
                                                 className="px-2 py-1 rounded ml-2 bg-red-500 hover:bg-[#ef4444cb] text-white"
                                             >
-                                                Xóa vĩnh viễn
+                                                <MdDeleteForever />
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             ))}
+                            {formFeedback && (
+                                <div className="fixed flex items-center justify-center top-0 bottom-0 left-0 right-0 z-[9999]">
+                                    <div
+                                        onClick={() => {
+                                            setFormFeedback(false);
+                                            setRoomId('');
+                                        }}
+                                        className="absolute top-0 bottom-0 left-0 right-0 opacity-50 bg-[#ccc]"
+                                    ></div>
+                                    <div className="relative px-10 flex flex-col justify-center items-center bg-white rounded-[10px] w-[30rem] min-h-[10rem]">
+                                        <RiFeedbackFill className="text-[3rem] text-orange-500" />
+                                        <p className="roboto-bold text-center mt-3">
+                                            {roomSelected?.feedBack
+                                                ? roomSelected.feedBack
+                                                : 'không có phản hồi nào!'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                             {formVisible && (
                                 <div className="fixed flex items-center justify-center top-0 bottom-0 left-0 right-0 z-[9999]">
                                     <div

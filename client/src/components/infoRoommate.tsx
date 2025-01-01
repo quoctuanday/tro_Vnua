@@ -1,9 +1,9 @@
 'use client';
-import { updateRoommate } from '@/api/api';
+import { refuseRoommate, updateRoommate } from '@/api/api';
 import { Roommate } from '@/schema/Roommate';
 import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { IoClose } from 'react-icons/io5';
 
@@ -20,6 +20,9 @@ const captions = [
 ];
 
 function InfoRoommatemate({ setFormOpen, roommate }: Props) {
+    const feedbackRef = useRef<HTMLTextAreaElement>(null);
+    const [error, setError] = useState('');
+
     const handleBrowse = () => {
         if (!roommate) return;
         const browseRoommate = async () => {
@@ -32,6 +35,19 @@ function InfoRoommatemate({ setFormOpen, roommate }: Props) {
             }
         };
         browseRoommate();
+    };
+    const handleRefuse = async (id: string) => {
+        if (!feedbackRef.current) return;
+        const valueFeedback = feedbackRef.current.value;
+        if (!valueFeedback) {
+            setError('Chưa nhập phản hồi từ chối bài viết!');
+            return;
+        }
+        const response = await refuseRoommate(id, { feedback: valueFeedback });
+        if (response) {
+            toast.success('Đã từ chối bài viết!');
+            setFormOpen(false);
+        }
     };
 
     return (
@@ -132,21 +148,50 @@ function InfoRoommatemate({ setFormOpen, roommate }: Props) {
                             </div>
                         </div>
                     </div>
+                    <div className="mt-2">
+                        <h1 className="roboto-bold">Phản hồi:</h1>
+                        <textarea
+                            ref={feedbackRef}
+                            name="feedback"
+                            className="outline-none border rounded w-full min-h-[10rem]"
+                        ></textarea>
+                    </div>
+                    {error && (
+                        <p className="text-red-400 text-center">{error}</p>
+                    )}
 
                     {/* Button to approve */}
-                    <button
-                        onClick={() => handleBrowse()}
-                        className={`mt-4 w-full py-2 px-4 rounded-md text-white ${
-                            roommate?.isAvailable
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                        disabled={roommate?.isAvailable}
-                    >
-                        {roommate?.isAvailable
-                            ? 'Bài đã duyệt'
-                            : 'Duyệt bài viết'}
-                    </button>
+
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => {
+                                if (roommate?._id) {
+                                    handleRefuse(roommate._id);
+                                }
+                            }}
+                            className={`mt-4 w-full py-2 px-4 rounded-md text-white ${
+                                roommate?.isAvailable
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-red-500 hover:bg-red-600'
+                            }`}
+                            disabled={roommate?.isAvailable}
+                        >
+                            Từ chối duyệt
+                        </button>
+                        <button
+                            onClick={() => handleBrowse()}
+                            className={`mt-4 ml-3 w-full py-2 px-4 rounded-md text-white ${
+                                roommate?.isAvailable
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
+                            disabled={roommate?.isAvailable}
+                        >
+                            {roommate?.isAvailable
+                                ? 'Bài đã duyệt'
+                                : 'Duyệt bài viết'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -203,6 +203,16 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
                         <span className="font-semibold">Địa chỉ:</span>{' '}
                         {roommateDetail.location.name}
                     </p>
+                    <div className="mt-2 relative flex items-center">
+                        <span className="roboto-bold">Link map:</span>
+                        <Link
+                            className="px-2 py-1 ml-2 border rounded w-[85%] hover:underline hover:text-blue-400 line-clamp-1"
+                            href={roommateDetail.location.linkMap}
+                            target="_blank"
+                        >
+                            {roommateDetail.location.linkMap}
+                        </Link>
+                    </div>
                 </div>
 
                 <CustomerMap

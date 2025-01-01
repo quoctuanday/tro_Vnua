@@ -160,6 +160,28 @@ class RoommateController {
             });
     }
 
+    async refuse(req, res) {
+        const roomId = req.params.roomId;
+        const feedback = req.body.data.feedback;
+
+        try {
+            const updatedRoom = await Roommate.findByIdAndUpdate(roomId, {
+                feedBack: feedback,
+            });
+
+            if (!updatedRoom) {
+                return res.status(404).json({ message: 'Room not found' });
+            }
+
+            await Roommate.delete({ _id: roomId });
+
+            return res.status(200).json({ message: 'Room has been refused' });
+        } catch (error) {
+            console.error('Refuse room error: ', error);
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
+    }
+
     getAllRoommates(req, res) {
         Roommate.find()
             .populate('userId', 'userName')

@@ -116,6 +116,8 @@ export const removeFavourite = (roomId) =>
 export const getFavourites = () => api.get('/rooms/getFavourites');
 
 //Roommate
+export const refuseRoommate = (id, data) =>
+    api.put(`/roommate/refuse/${id}`, { data });
 export const createRoommate = (data) =>
     api.post('/roommate/createRoommate', { data });
 export const getRoommatePersonal = () => api.get('/roommate/getPersonRoommate');

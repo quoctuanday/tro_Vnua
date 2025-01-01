@@ -14,6 +14,12 @@ router.delete(
     authenticateToken,
     roomateController.deleteFavourite
 );
+router.put(
+    '/refuse/:roomId',
+    authenticateToken,
+    authorization(['admin', 'moderator']),
+    roomateController.refuse
+);
 router.post(
     '/createFavourite/:roomId',
     authenticateToken,
