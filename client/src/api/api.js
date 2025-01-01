@@ -107,6 +107,8 @@ export const updateRoomPersonal = (data) =>
 export const getAllRooms = () => api.get('/rooms/getAllRooms');
 export const updateRoom = (id, data) =>
     api.put(`/rooms/update/${id}`, { data });
+export const refuseRoom = (id, data) =>
+    api.put(`/rooms/refuse/${id}`, { data });
 export const addFavourite = (roomId) =>
     api.post(`/rooms/createFavourite/${roomId}`);
 export const removeFavourite = (roomId) =>

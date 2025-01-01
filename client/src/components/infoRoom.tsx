@@ -1,9 +1,9 @@
 'use client';
-import { updateRoom } from '@/api/api';
+import { refuseRoom, updateRoom } from '@/api/api';
 import { Room } from '@/schema/room';
 import Currency from '@/utils/convertCurrency';
 import Image from 'next/image';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { IoClose } from 'react-icons/io5';
 
@@ -20,6 +20,8 @@ const captions = [
 ];
 
 function InfoRoom({ setFormOpen, room }: Props) {
+    const feedbackRef = useRef<HTMLTextAreaElement>(null);
+    const [error, setError] = useState('');
     const handleBrowse = () => {
         if (!room) return;
         const browseRoom = async () => {
@@ -30,6 +32,19 @@ function InfoRoom({ setFormOpen, room }: Props) {
             }
         };
         browseRoom();
+    };
+    const handleRefuse = async (id: string) => {
+        if (!feedbackRef.current) return;
+        const valueFeedback = feedbackRef.current.value;
+        if (!valueFeedback) {
+            setError('Chưa nhập phản hồi từ chối bài viết!');
+            return;
+        }
+        const response = await refuseRoom(id, { feedback: valueFeedback });
+        if (response) {
+            toast.success('Đã từ chối bài viết!');
+            setFormOpen(false);
+        }
     };
 
     return (
@@ -126,19 +141,48 @@ function InfoRoom({ setFormOpen, room }: Props) {
                             </div>
                         </div>
                     </div>
+                    <div className="mt-2">
+                        <h1 className="roboto-bold">Phản hồi:</h1>
+                        <textarea
+                            ref={feedbackRef}
+                            name="feedback"
+                            className="outline-none border rounded w-full min-h-[10rem]"
+                        ></textarea>
+                    </div>
+                    {error && (
+                        <p className="text-red-400 text-center">{error}</p>
+                    )}
 
-                    {/* Button to approve */}
-                    <button
-                        onClick={() => handleBrowse()}
-                        className={`mt-4 w-full py-2 px-4 rounded-md text-white ${
-                            room?.isAvailable
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                        disabled={room?.isAvailable}
-                    >
-                        {room?.isAvailable ? 'Bài đã duyệt' : 'Duyệt bài viết'}
-                    </button>
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => {
+                                if (room?._id) {
+                                    handleRefuse(room._id);
+                                }
+                            }}
+                            className={`mt-4 w-full py-2 px-4 rounded-md text-white ${
+                                room?.isAvailable
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-red-500 hover:bg-red-600'
+                            }`}
+                            disabled={room?.isAvailable}
+                        >
+                            Từ chối duyệt
+                        </button>
+                        <button
+                            onClick={() => handleBrowse()}
+                            className={`mt-4 ml-3 w-full py-2 px-4 rounded-md text-white ${
+                                room?.isAvailable
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
+                            disabled={room?.isAvailable}
+                        >
+                            {room?.isAvailable
+                                ? 'Bài đã duyệt'
+                                : 'Duyệt bài viết'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

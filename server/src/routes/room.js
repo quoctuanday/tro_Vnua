@@ -22,6 +22,12 @@ router.put(
     authorization(['admin', 'moderator']),
     roomController.update
 );
+router.put(
+    '/refuse/:roomId',
+    authenticateToken,
+    authorization(['admin', 'moderator']),
+    roomController.refuse
+);
 router.get('/getAllRooms', roomController.getAllRooms);
 //For personal user
 router.put(

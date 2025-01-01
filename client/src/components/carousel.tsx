@@ -57,7 +57,7 @@ const Carousel: React.FC<CarouselProps> = ({ images, title }) => {
                                     alt={`Ảnh nhỏ ${index + 1} của ${title}`}
                                     width={100}
                                     height={100}
-                                    className={`h-[5rem] w-auto rounded-lg cursor-pointer transition-transform transform hover:scale-105 ${
+                                    className={`h-[5rem] w-full rounded-lg cursor-pointer transition-transform transform hover:scale-105 ${
                                         currentIndex === index
                                             ? 'border-2 border-blue-500'
                                             : ''

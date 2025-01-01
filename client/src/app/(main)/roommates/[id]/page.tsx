@@ -456,33 +456,50 @@ function RoommateDetailPage({ params }: { params: Promise<{ id: string }> }) {
             </div>
 
             <div className="col-span-1 w-full bg-gray-50 p-6 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                    Thông tin chủ sở hữu
-                </h2>
-                <div className="text-lg text-gray-700 space-y-2">
-                    <p>
-                        <strong className="font-bold">Chủ sở hữu:</strong>{' '}
-                        {roommateDetail.ownerName}
-                    </p>
-                    <p>
-                        <strong className="font-bold">Số điện thoại:</strong>{' '}
-                        <a
-                            href={`tel:${roommateDetail.contactNumber}`}
-                            className="text-blue-600"
-                        >
-                            {roommateDetail.contactNumber}
-                        </a>
-                    </p>
-                    <p>
-                        <strong className="font-bold">Email:</strong>{' '}
-                        <a
-                            href={`mailto:${roommateDetail.contactEmail}`}
-                            className="text-blue-600"
-                        >
-                            {roommateDetail.contactEmail}
-                        </a>
-                    </p>
-                </div>
+                {userLoginData ? (
+                    <div>
+                        <h2 className="text-2xl font-semibold text-gray-800">
+                            Thông tin chủ sở hữu
+                        </h2>
+                        <div className="text-lg text-gray-700 space-y-2">
+                            <p>
+                                <strong className="font-bold">
+                                    Chủ sở hữu:
+                                </strong>{' '}
+                                {roommateDetail.ownerName}
+                            </p>
+                            <p>
+                                <strong className="font-bold">
+                                    Số điện thoại:
+                                </strong>{' '}
+                                <a
+                                    href={`tel:${roommateDetail.contactNumber}`}
+                                    className="text-blue-600"
+                                >
+                                    {roommateDetail.contactNumber}
+                                </a>
+                            </p>
+                            <p>
+                                <strong className="font-bold">Email:</strong>{' '}
+                                <a
+                                    href={`mailto:${roommateDetail.contactEmail}`}
+                                    className="text-blue-600"
+                                >
+                                    {roommateDetail.contactEmail}
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="">
+                        <h2 className="text-2xl font-semibold text-gray-800">
+                            Thông tin chủ sở hữu
+                        </h2>
+                        <span className="roboto-bold text-blue-400 mt-3">
+                            Bạn cần đăng nhập mới có thể xem{' '}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <Toaster position="top-right" />

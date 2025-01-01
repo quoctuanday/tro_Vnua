@@ -128,7 +128,7 @@ function ListRoomPage() {
             <div className="grid grid-cols-3 gap-8">
                 <div className="col-span-2">
                     <h1 className="roboto-bold text-[1.3rem]">
-                        Cho thuê phòng trọ
+                        Phòng cho thuê
                     </h1>
                     <span className="">
                         Có {numberOfRoom} tin đăng cho thuê.
@@ -336,18 +336,18 @@ function ListRoomPage() {
                         {categories.map((category) => (
                             <div className="first:mt-0 mt-3" key={category._id}>
                                 <h1 className="roboto-bold">{category.name}</h1>
-                                <div className="grid grid-cols-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     {category.child.map((child) => {
                                         const updatedChildName =
                                             child.name.replace(/m2/g, 'm²');
 
                                         return (
                                             <div
-                                                className={`col-span-1 hover:text-rootColor cursor-pointer ${
+                                                className={`col-span-1 rounded hover:bg-rootColor hover:text-white cursor-pointer ${
                                                     listChildCate.includes(
                                                         child._id
                                                     )
-                                                        ? 'text-rootColor roboto-bold'
+                                                        ? 'bg-rootColor text-white roboto-bold'
                                                         : ''
                                                 }`}
                                                 key={child._id}

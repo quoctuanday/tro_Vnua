@@ -172,18 +172,18 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                     title={roomDetail.title}
                 />
 
-                <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+                <h1 className="text-3xl roboto-bold mb-6 text-gray-800">
                     {roomDetail.title}
                 </h1>
                 <div className="bg-white p-4 rounded-lg shadow-md space-y-4">
-                    <p className="text-sm text-gray-600">
-                        <span className="font-semibold">Ngày đăng:</span>{' '}
+                    <p className="">
+                        <span className="roboto-bold">Ngày đăng:</span>{' '}
                         {dateConvert(roomDetail.createdAt)}
                     </p>
 
-                    <div className="flex items-center space-x-3 text-base text-gray-600">
+                    <div className="flex items-center space-x-3 text-base ">
                         <p className="flex items-center space-x-1">
-                            <span className="font-semibold">Giá:</span>
+                            <span className="roboto-bold">Giá:</span>
                             <span>
                                 {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
@@ -193,15 +193,25 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                             </span>
                         </p>
                         <p className="flex items-center space-x-1">
-                            <span className="font-semibold">Diện tích:</span>
+                            <span className="roboto-bold">Diện tích:</span>
                             <span>{roomDetail.acreage} m²</span>
                         </p>
                     </div>
 
-                    <p className="text-base text-gray-600">
-                        <span className="font-semibold">Địa chỉ:</span>{' '}
+                    <p className="text-base ">
+                        <span className="roboto-bold">Địa chỉ:</span>{' '}
                         {roomDetail.location.name}
                     </p>
+                    <div className="mt-2 relative flex items-center">
+                        <span className="roboto-bold">Link map:</span>
+                        <Link
+                            className="px-2 py-1 ml-2 border rounded w-[85%] hover:underline hover:text-blue-400 line-clamp-1"
+                            href={roomDetail.location.linkMap}
+                            target="_blank"
+                        >
+                            {roomDetail.location.linkMap}
+                        </Link>
+                    </div>
                 </div>
 
                 <CustomerMap
@@ -211,7 +221,7 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
                 />
 
                 <div className="my-6">
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl roboto-bold text-gray-800">
                         Thông tin mô tả
                     </h2>
                     <p className="text-lg mb-4 text-gray-700 whitespace-pre-line leading-relaxed">
@@ -448,33 +458,50 @@ function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
             </div>
 
             <div className="col-span-1 w-full bg-gray-50 p-6 rounded-lg shadow-md space-y-4 mt-6 lg:mt-0">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                    Thông tin chủ sở hữu
-                </h2>
-                <div className="text-lg text-gray-700 space-y-2">
-                    <p>
-                        <strong className="font-bold">Chủ sở hữu:</strong>{' '}
-                        {roomDetail.ownerName}
-                    </p>
-                    <p>
-                        <strong className="font-bold">Số điện thoại:</strong>{' '}
-                        <a
-                            href={`tel:${roomDetail.contactNumber}`}
-                            className="text-blue-600"
-                        >
-                            {roomDetail.contactNumber}
-                        </a>
-                    </p>
-                    <p>
-                        <strong className="font-bold">Email:</strong>{' '}
-                        <a
-                            href={`mailto:${roomDetail.contactEmail}`}
-                            className="text-blue-600"
-                        >
-                            {roomDetail.contactEmail}
-                        </a>
-                    </p>
-                </div>
+                {userLoginData ? (
+                    <div>
+                        <h2 className="text-2xl roboto-bold text-gray-800">
+                            Thông tin chủ sở hữu
+                        </h2>
+                        <div className="text-lg text-gray-700 space-y-2">
+                            <p>
+                                <strong className="font-bold">
+                                    Chủ sở hữu:
+                                </strong>{' '}
+                                {roomDetail.ownerName}
+                            </p>
+                            <p>
+                                <strong className="font-bold">
+                                    Số điện thoại:
+                                </strong>{' '}
+                                <a
+                                    href={`tel:${roomDetail.contactNumber}`}
+                                    className="text-blue-600"
+                                >
+                                    {roomDetail.contactNumber}
+                                </a>
+                            </p>
+                            <p>
+                                <strong className="font-bold">Email:</strong>{' '}
+                                <a
+                                    href={`mailto:${roomDetail.contactEmail}`}
+                                    className="text-blue-600"
+                                >
+                                    {roomDetail.contactEmail}
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="">
+                        <h2 className="text-2xl roboto-bold text-gray-800">
+                            Thông tin chủ sở hữu
+                        </h2>
+                        <span className="roboto-bold text-blue-400 mt-3">
+                            Bạn cần đăng nhập mới có thể xem{' '}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <Toaster position="top-right" />

@@ -28,7 +28,7 @@ import { Roommate } from '@/schema/Roommate';
 import formatTimeDifference from '@/utils/formatTime';
 
 function RoommatematePage() {
-    const { socket } = useUser();
+    const { socket, userLoginData } = useUser();
     const [roommates, setRoommates] = useState<Roommate[]>([]);
     const [filterRoommates, setFilterRoommates] = useState<Roommate[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -50,9 +50,22 @@ function RoommatematePage() {
                         roommate.isAvailable && roommate.isCheckout
                 );
 
-                availableRoommates.sort(
-                    (a: Roommate, b: Roommate) => b.rate - a.rate
-                );
+                availableRoommates.sort((a: Roommate, b: Roommate) => {
+                    if (userLoginData?.gender) {
+                        if (
+                            a.require.gender === userLoginData.gender &&
+                            b.require.gender !== userLoginData.gender
+                        )
+                            return -1;
+                        if (
+                            a.require.gender !== userLoginData.gender &&
+                            b.require.gender === userLoginData.gender
+                        )
+                            return 1;
+                    }
+                    return b.rate - a.rate;
+                });
+
                 setNumberOfRoommate(availableRoommates.length);
 
                 setRoommates(availableRoommates);
@@ -88,7 +101,7 @@ function RoommatematePage() {
         socket.on('roommate-update', () => {
             getRoommates();
         });
-    }, [socket]);
+    }, [socket, userLoginData]);
 
     const handleFavourite = async (roommateId: string) => {
         if (isFavourite.includes(roommateId)) {
@@ -130,9 +143,7 @@ function RoommatematePage() {
         <div className="pt-6">
             <div className="grid grid-cols-3 gap-8">
                 <div className="col-span-2">
-                    <h1 className="roboto-bold text-[1.3rem]">
-                        Tìm bạn ở ghép
-                    </h1>
+                    <h1 className="roboto-bold text-[1.3rem]">Phòng ở ghép</h1>
                     <span className="">
                         Có {numberOfRoommate} tin đăng cho thuê.
                     </span>
@@ -361,18 +372,18 @@ function RoommatematePage() {
                         {categories.map((category) => (
                             <div className="first:mt-0 mt-3" key={category._id}>
                                 <h1 className="roboto-bold">{category.name}</h1>
-                                <div className="grid grid-cols-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     {category.child.map((child) => {
                                         const updatedChildName =
                                             child.name.replace(/m2/g, 'm²');
 
                                         return (
                                             <div
-                                                className={`col-span-1 hover:text-rootColor cursor-pointer ${
+                                                className={`col-span-1 flex items-center hover:bg-rootColor hover:text-white rounded cursor-pointer ${
                                                     listChildCate.includes(
                                                         child._id
                                                     )
-                                                        ? 'text-rootColor roboto-bold'
+                                                        ? 'bg-rootColor text-white roboto-bold'
                                                         : ''
                                                 }`}
                                                 key={child._id}

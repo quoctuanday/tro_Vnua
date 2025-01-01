@@ -11,8 +11,11 @@ class RoomController {
         data.urlSaveImages = req.body.data.folderPath;
         const location = data.location;
         delete data.location;
+        const linkMap = data.linkMap;
+        delete data.linkMap;
         data.location = {
             name: location,
+            linkMap: linkMap,
             coordinates: req.body.data.coords,
         };
         const childIds = req.body.data.childCateId;
@@ -67,8 +70,11 @@ class RoomController {
         data.images = req.body.data.uploadURL;
         const location = data.location;
         delete data.location;
+        const linkMap = data.linkMap;
+        delete data.linkMap;
         data.location = {
             name: location,
+            linkMap: linkMap,
             coordinates: req.body.data.coords,
         };
         const childIds = req.body.data.childCateId;
@@ -194,6 +200,28 @@ class RoomController {
                 res.status(500).json({ message: 'Internal Server Error' });
             });
     }
+    async refuse(req, res) {
+        const roomId = req.params.roomId;
+        const feedback = req.body.data.feedback;
+
+        try {
+            const updatedRoom = await Room.findByIdAndUpdate(roomId, {
+                feedBack: feedback,
+            });
+
+            if (!updatedRoom) {
+                return res.status(404).json({ message: 'Room not found' });
+            }
+
+            await Room.delete({ _id: roomId });
+
+            return res.status(200).json({ message: 'Room has been refused' });
+        } catch (error) {
+            console.error('Refuse room error: ', error);
+            return res.status(500).json({ message: 'Internal Server Error' });
+        }
+    }
+
     update(req, res) {
         const roomId = req.params.roomId;
         const data = req.body.data;

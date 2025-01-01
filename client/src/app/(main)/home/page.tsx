@@ -117,21 +117,23 @@ function HomePage() {
                                 height={180}
                                 className="w-full h-[180px] rounded-lg"
                             />
-                            <h3 className="text-lg roboto-bold mt-2">
-                                {room.title}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                                {room.location.name}
-                            </p>
-                            <p className="text-rootColor font-bold">
-                                {formatCurrency(room.price)} /tháng
-                            </p>
-                            <Link
-                                href={`/rooms/${room._id}`}
-                                className="text-blue-500 mt-2 inline-block"
-                            >
-                                Xem chi tiết
-                            </Link>
+                            <div className="flex flex-col justify-between h-[190px]">
+                                <h3 className="text-lg roboto-bold mt-2 line-clamp-2">
+                                    {room.title}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                    {room.location.name}
+                                </p>
+                                <p className="text-rootColor font-bold">
+                                    {formatCurrency(room.price)} /tháng
+                                </p>
+                                <Link
+                                    href={`/rooms/${room._id}`}
+                                    className="text-blue-500 mt-2 inline-block"
+                                >
+                                    Xem chi tiết
+                                </Link>
+                            </div>
                         </div>
                     )}
                 />

@@ -19,11 +19,13 @@ export type Roommate = {
     description: string;
     location: {
         name: string;
+        linkMap: string;
         coordinates: {
             latitude: number;
             longitude: number;
         };
     };
+    feedBack?: string;
     isCheckout?: boolean;
     urlSaveImages: string;
     price: number;

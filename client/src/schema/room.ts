@@ -10,6 +10,7 @@ export type Room = {
     description: string;
     location: {
         name: string;
+        linkMap: string;
         coordinates: {
             latitude: number;
             longitude: number;
@@ -20,6 +21,7 @@ export type Room = {
     price: number;
     acreage: number;
     rate: number;
+    feedBack?: string;
     isAvailable: boolean;
     createdAt?: string;
     updatedAt?: string;

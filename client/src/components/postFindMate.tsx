@@ -59,6 +59,9 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
     const [captcha, setCaptcha] = useState('');
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const streetRef = useRef<HTMLInputElement>(null);
+    const roadRef = useRef<HTMLInputElement>(null);
+    const addressRef = useRef<HTMLInputElement>(null);
 
     const drawCaptcha = () => {
         const canvas = canvasRef.current;
@@ -133,6 +136,7 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
             setValue('numberOfPeople', roommate.numberOfPeople);
             setValue('acreage', roommate.acreage);
             setValue('location', roommate.location.name);
+            setValue('linkMap', roommate.location.linkMap);
             setCoords({
                 latitude: roommate.location.coordinates.latitude,
                 longitude: roommate.location.coordinates.longitude,
@@ -246,12 +250,15 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
 
     const searchMap = async () => {
         console.log(location);
-        const locationValue = getValues('location');
-        const fullAddress = `${locationValue}, ${location}`;
+        if (!streetRef.current && !roadRef.current && !addressRef.current)
+            return;
+        const fullAddress = `${addressRef.current?.value}, ${roadRef.current?.value}, ${streetRef.current?.value}, ${location}`;
+        const halfAddress = `${roadRef.current?.value} ${streetRef.current?.value}, ${location}`;
         setValue('location', fullAddress);
         console.log(fullAddress);
-        if (fullAddress) {
-            getCoordinates(fullAddress)
+        console.log(halfAddress);
+        if (halfAddress) {
+            getCoordinates(halfAddress)
                 .then((coords: { latitude: number; longitude: number }) =>
                     setCoords(coords)
                 )
@@ -692,30 +699,60 @@ const PostFindMate: React.FC<PostFindMateProps> = ({
                     </div>
                     <div className="mt-3 roboto-bold">
                         <h1 className="roboto-bold">Vị trí: </h1>
-                        {action && (
+                        {action ? (
                             <div>
                                 <LocationInput setLocation={setLocation} />
-                                <h1 className="mt-2 ">Ngõ đường:</h1>
+                                <div className="w-full grid grid-cols-3 gap-1 mt-2">
+                                    <div className="col-span-1 flex items-center">
+                                        <span>Đường:</span>
+                                        <input
+                                            ref={streetRef}
+                                            required
+                                            placeholder="VD: Đường Trâu Quỳ"
+                                            type="text"
+                                            className=" ml-2 rounded-[10px]  mt-1 px-2 py-1 border-2 outline-none"
+                                        />
+                                    </div>
+                                    <div className="col-span-1 flex items-center">
+                                        <span>Ngõ:</span>
+                                        <input
+                                            ref={roadRef}
+                                            required
+                                            placeholder="VD: Ngõ 62"
+                                            type="text"
+                                            className=" ml-2 rounded-[10px]  mt-1 px-2 py-1 border-2 outline-none"
+                                        />
+                                    </div>
+                                    <div className="col-span-1 flex items-center">
+                                        <span>Số nhà:</span>
+                                        <input
+                                            ref={addressRef}
+                                            required
+                                            placeholder="VD: Nhà 2"
+                                            type="text"
+                                            className=" ml-2 rounded-[10px]  mt-1 px-2 py-1 border-2 outline-none"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                        <div className="w-full grid grid-cols-5 gap-3">
-                            <div className="w-full col-span-4">
+                        ) : (
+                            <div className="mt-1 w-full flex items-center">
                                 <input
                                     {...register('location', {
                                         required: true,
                                     })}
-                                    placeholder="VD:Ngõ 64, phố Ngô Xuân Quảng, An Lạc"
                                     type="text"
-                                    className="rounded-[10px] w-full mt-1 px-2 py-1 border-2 outline-none"
+                                    className="rounded-[10px] px-2 py-1 border-2 outline-none w-[80%]"
                                 />
+                                <div
+                                    onClick={searchMap}
+                                    className="ml-2 bg-rootColor cursor-pointer text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
+                                >
+                                    Tìm kiếm
+                                </div>
                             </div>
-                            <div
-                                onClick={searchMap}
-                                className="ml-2 col-span-1 text-center mt-2 bg-rootColor cursor-pointer text-white px-2 py-1 rounded-[10px] hover:bg-[#699ba3c2]"
-                            >
-                                Tìm kiếm
-                            </div>
-                        </div>
+                        )}
+
                         {coords && (
                             <div className="w-full rounded h-[400px] mt-1 ">
                                 <CustomerMap

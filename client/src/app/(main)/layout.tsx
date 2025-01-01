@@ -42,8 +42,6 @@ export default function MainLayout({
         return null;
     }
 
-   
-
     return (
         <div className="min-h-[80vh]">
             <div>
@@ -69,7 +67,9 @@ export default function MainLayout({
                                     {isFavouriteBox && (
                                         <div className="box-open absolute right-0 bg-white rounded w-[30rem] max-h-[30rem] overflow-y-auto shadow-custom-light">
                                             <FavoriteBox
-                                                setIsFavouriteBox={setIsFavouriteBox}
+                                                setIsFavouriteBox={
+                                                    setIsFavouriteBox
+                                                }
                                             />
                                         </div>
                                     )}
@@ -109,16 +109,28 @@ export default function MainLayout({
                 </div>
 
                 <div className="flex items-center bg-rootColor text-white px-[13rem] py-3 ">
-                    <Link href={'/home'} className="roboto-bold block hover:underline">
+                    <Link
+                        href={'/home'}
+                        className="roboto-bold block hover:underline"
+                    >
                         Trang chủ
                     </Link>
-                    <Link href={'/rooms'} className="roboto-bold ml-9 hover:underline block">
-                        Cho thuê phòng
+                    <Link
+                        href={'/rooms'}
+                        className="roboto-bold ml-9 hover:underline block"
+                    >
+                        Phòng cho thuê
                     </Link>
-                    <Link href={'/roommates'} className="roboto-bold ml-9 hover:underline block">
-                        Tìm người ở ghép
+                    <Link
+                        href={'/roommates'}
+                        className="roboto-bold ml-9 hover:underline block"
+                    >
+                        Phòng ở ghép
                     </Link>
-                    <Link href={'/news'} className="roboto-bold ml-9 hover:underline block">
+                    <Link
+                        href={'/news'}
+                        className="roboto-bold ml-9 hover:underline block"
+                    >
                         Tin tức
                     </Link>
                 </div>
@@ -127,8 +139,6 @@ export default function MainLayout({
             <div className="bg-[#efefef3f] px-[13rem]">{children}</div>
             <div className="pt-[5rem] w-full bg-[#efefef3f]"></div>
             <FooterPage />
-
-            
         </div>
     );
 }

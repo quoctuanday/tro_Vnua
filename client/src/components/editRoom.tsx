@@ -125,6 +125,7 @@ const EditRoom: React.FC<PostRoomProps> = ({
         setValue('price', room.price);
         setValue('acreage', room.acreage);
         setValue('location', room.location.name);
+        setValue('linkMap', room.location.linkMap);
         setCoords({
             latitude: room.location.coordinates.latitude,
             longitude: room.location.coordinates.longitude,
@@ -546,6 +547,14 @@ const EditRoom: React.FC<PostRoomProps> = ({
                                     {error}
                                 </div>
                             )}
+                            <div className="mt-2 flex items-center">
+                                <label>Liên kết google map:</label>
+                                <input
+                                    {...register('linkMap', { required: true })}
+                                    type="text"
+                                    className="ml-2 rounded-[10px]  mt-1 px-2 py-1 border-2 outline-none w-[80%]"
+                                />
+                            </div>
                         </div>
                         <div className="mt-3">
                             <div className="border-2 border-dotted w-full h-[5rem]">

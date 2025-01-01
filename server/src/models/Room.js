@@ -13,6 +13,7 @@ const Room = new Schema(
         description: { type: String, required: true },
         location: {
             name: { type: String, required: true },
+            linkMap: { type: String },
             coordinates: {
                 latitude: { type: Number, required: true },
                 longitude: { type: Number, required: true },
@@ -25,6 +26,7 @@ const Room = new Schema(
         isAvailable: { type: Boolean, required: true, default: false },
         isCheckout: { type: Boolean, required: true, default: false },
         rate: { type: Number, default: 0 },
+        feedBack: { type: String },
     },
     { timestamps: true }
 );

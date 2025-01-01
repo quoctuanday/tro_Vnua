@@ -26,8 +26,11 @@ class RoommateController {
             },
             other: other,
         };
+        const linkMap = data.linkMap;
+        delete data.linkMap;
         data.location = {
             name: location,
+            linkMap: linkMap,
             coordinates: req.body.data.coords,
         };
         const childIds = req.body.data.childCateId;
@@ -81,8 +84,11 @@ class RoommateController {
         data.images = req.body.data.uploadURL;
         const location = data.location;
         delete data.location;
+        const linkMap = data.linkMap;
+        delete data.linkMap;
         data.location = {
             name: location,
+            linkMap: linkMap,
             coordinates: req.body.data.coords,
         };
         Roommate.findByIdAndUpdate(data._id, data)
